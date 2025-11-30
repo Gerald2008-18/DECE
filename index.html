@@ -35,21 +35,6 @@
             to { opacity: 1; transform: scale(1); }
         }
         
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        @keyframes slideDown {
-            from { max-height: 0; opacity: 0; }
-            to { max-height: 500px; opacity: 1; }
-        }
-        
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(1.05); }
@@ -59,13 +44,6 @@
         .slide-in-left { animation: slideInLeft 0.6s ease-out; }
         .slide-in-right { animation: slideInRight 0.6s ease-out; }
         .scale-in { animation: scaleIn 0.4s ease-out; }
-        .slide-down { animation: slideDown 0.3s ease-out; }
-        
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
         
         .gradient-bg {
             background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #3b82f6 100%);
@@ -121,29 +99,22 @@
             z-index: 1;
         }
         
-        input:focus, textarea:focus, select:focus {
-            transform: scale(1.02);
+        .smooth-update {
             transition: all 0.3s ease;
         }
         
-        .notification {
-            animation: slideInRight 0.5s ease-out;
+        .logo-institucional {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
         }
         
-        .loading-spinner {
-            animation: rotate 1s linear infinite;
+        .badge-en-proceso {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            animation: pulse 2s ease-in-out infinite;
         }
         
-        .turno-card {
-            transition: all 0.3s ease;
-        }
-        
-        .turno-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-        }
-        
-        /* Scrollbar personalizado */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -156,103 +127,137 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 5px;
         }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        }
-        
-        /* Actualización suave sin parpadeo */
-        .smooth-update {
-            transition: all 0.3s ease;
-        }
-        
-        /* Logo institucional */
-        .logo-institucional {
-            width: 100px;
-            height: 100px;
-            object-fit: contain;
-            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
-        }
-        
-        /* Badge de estado EN PROCESO */
-        .badge-en-proceso {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            animation: pulse 2s ease-in-out infinite;
-        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen relative overflow-x-hidden">
-    <!-- Notificaciones Toast -->
     <div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
     
-    <!-- Audio para notificaciones -->
     <audio id="notificationSound" preload="auto">
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSBEL" type="audio/wav">
     </audio>
     
-    <!-- App principal -->
     <div id="app"></div>
 
     <script>
-        // ===============================================
-        // CONFIGURACIÓN DE EMAILJS - ✅ MEJORADO
-        // ===============================================
+        // SISTEMA DE NOTIFICACIONES
+        function showNotification(mensaje, tipo = 'info') {
+            const container = document.getElementById('notifications');
+            const id = Date.now();
+            
+            const colores = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notif = document.createElement('div');
+            notif.id = `notif-${id}`;
+            notif.className = `${colores[tipo]} text-white px-6 py-4 rounded-xl shadow-2xl max-w-md fade-in`;
+            notif.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">${tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : tipo === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                    <span class="font-semibold">${mensaje}</span>
+                </div>
+            `;
+            
+            container.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.style.opacity = '0';
+                notif.style.transform = 'translateX(400px)';
+                setTimeout(() => notif.remove(), 300);
+            }, 4000);
+        }
+        
+        function playNotificationSound() {
+            const audio = document.getElementById('notificationSound');
+            if (audio) {
+                audio.play().catch(e => console.log('No se pudo reproducir el sonido'));
+            }
+        }
+        
+        // CONFIGURACIÓN DE EMAILJS
         const EMAILJS_CONFIG = {
             PUBLIC_KEY: 'RtA5YFyTxrNjrb_CX',
             SERVICE_ID: 'service_83qp86c',
             TEMPLATE_ID: 'template_nipqoci'
         };
         
-        // Inicializar EmailJS correctamente
+        // Inicializar EmailJS
         (function() {
             try {
-                emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
-                console.log('✅ EmailJS inicializado correctamente');
+                if (typeof emailjs !== 'undefined') {
+                    emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+                    console.log('✅ EmailJS inicializado correctamente');
+                } else {
+                    console.error('❌ EmailJS no está cargado');
+                }
             } catch (error) {
                 console.error('❌ Error al inicializar EmailJS:', error);
             }
         })();
         
-        // ===============================================
-        // FUNCIONES DE EMAIL - ✅ CORREGIDO
-        // ===============================================
+        // FUNCIÓN DE ENVÍO DE EMAIL
         async function enviarEmailAceptacion(turno) {
-            console.log('📧 Intentando enviar email al turno:', turno.id);
-            console.log('📧 DATOS COMPLETOS DEL TURNO:', turno);
-            console.log('📧 Email destino:', turno.email_estudiante);
+            console.log('📧 INICIANDO ENVÍO DE EMAIL');
             
-            // ⚠️ VALIDACIÓN MEJORADA: Verificar si hay email del estudiante
-            if (!turno.email_estudiante || 
-                turno.email_estudiante.trim() === '' || 
-                turno.email_estudiante === 'null' || 
-                turno.email_estudiante === 'undefined') {
-                console.warn('⚠️ No hay email del estudiante registrado');
-                console.warn('⚠️ Turno completo:', JSON.stringify(turno, null, 2));
-                showNotification('✅ Turno aceptado. ⚠️ No se pudo enviar email: el estudiante no tiene correo registrado.', 'warning');
+            if (!turno || typeof turno !== 'object') {
+                console.error('❌ Turno no válido');
+                showNotification('⚠️ Error: Datos de turno no válidos', 'warning');
                 return false;
             }
             
+            let emailEstudiante = turno.email_estudiante;
+            
+            if (!emailEstudiante) {
+                emailEstudiante = turno.correo_estudiante || turno.email || null;
+            }
+            
+            if (emailEstudiante === null || emailEstudiante === undefined) {
+                console.error('❌ Email es NULL');
+                showNotification('⚠️ Turno aceptado pero sin email', 'warning');
+                return false;
+            }
+            
+            const emailLimpio = String(emailEstudiante).trim();
+            
+            if (!emailLimpio || emailLimpio === 'null' || emailLimpio === 'undefined') {
+                console.error('❌ Email vacío');
+                showNotification('⚠️ Email está vacío', 'warning');
+                return false;
+            }
+            
+            const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regexEmail.test(emailLimpio)) {
+                console.error('❌ Email inválido:', emailLimpio);
+                showNotification('⚠️ Email inválido', 'warning');
+                return false;
+            }
+            
+            console.log('✅ Email validado:', emailLimpio);
+            
             try {
-                // Formatear fecha y hora
-                const fechaSolicitud = new Date(turno.created_at).toLocaleDateString('es-ES', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                });
+                const fechaSolicitud = turno.created_at 
+                    ? new Date(turno.created_at).toLocaleDateString('es-ES', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    })
+                    : 'No disponible';
                 
-                const horaSolicitud = new Date(turno.created_at).toLocaleTimeString('es-ES', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                // ✅ FIX CRÍTICO: Asegurar que to_email NO esté vacío
-                const emailDestino = turno.email_estudiante.trim();
+                const horaSolicitud = turno.created_at
+                    ? new Date(turno.created_at).toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                    : 'No disponible';
                 
                 const templateParams = {
-                    to_email: emailDestino,
+                    to_email: emailLimpio,
                     student_name: turno.nombre || 'Estudiante',
-                    turno_numero: turno.numero_turno || 'N/A',
+                    turno_numero: turno.numero_turno || turno.id || 'N/A',
                     fecha_solicitud: fechaSolicitud,
                     hora_solicitud: horaSolicitud,
                     hora_atencion: turno.hora_atencion_programada || 'Por confirmar',
@@ -261,79 +266,31 @@
                     cedula: turno.cedula || 'No especificada'
                 };
                 
-                console.log('📤 Enviando email con parámetros:', templateParams);
-                
-                // Validación extra antes de enviar
-                if (!templateParams.to_email || templateParams.to_email === '') {
-                    throw new Error('Email destino está vacío después de validación');
+                if (typeof emailjs === 'undefined') {
+                    throw new Error('EmailJS no está disponible');
                 }
+                
+                console.log('🚀 Enviando email...');
                 
                 const response = await emailjs.send(
                     EMAILJS_CONFIG.SERVICE_ID,
                     EMAILJS_CONFIG.TEMPLATE_ID,
-                    templateParams
+                    templateParams,
+                    EMAILJS_CONFIG.PUBLIC_KEY
                 );
                 
-                console.log('✅ Email enviado exitosamente:', response);
-                showNotification('📧 Email enviado exitosamente al estudiante', 'success');
+                console.log('✅ EMAIL ENVIADO EXITOSAMENTE');
+                showNotification(`📧 Email enviado a ${emailLimpio}`, 'success');
                 return true;
                 
             } catch (error) {
-                console.error('❌ Error al enviar email:', error);
-                console.error('❌ Detalles del error:', error.text || error.message);
-                showNotification('⚠️ Turno aceptado pero error al enviar email: ' + (error.text || error.message), 'warning');
+                console.error('❌ ERROR AL ENVIAR EMAIL:', error);
+                showNotification(`⚠️ No se envió email: ${error.message}`, 'warning');
                 return false;
             }
         }
         
-        // ===============================================
-        // SISTEMA DE NOTIFICACIONES
-        // ===============================================
-        function playNotificationSound() {
-            const sound = document.getElementById('notificationSound');
-            sound.play().catch(e => console.log('No se pudo reproducir el sonido'));
-        }
-        
-        function showNotification(message, type = 'info') {
-            const container = document.getElementById('notifications');
-            const notification = document.createElement('div');
-            
-            const colors = {
-                success: 'bg-green-500',
-                error: 'bg-red-500',
-                warning: 'bg-yellow-500',
-                info: 'bg-blue-500'
-            };
-            
-            const icons = {
-                success: '✅',
-                error: '❌',
-                warning: '⚠️',
-                info: 'ℹ️'
-            };
-            
-            notification.className = `notification ${colors[type]} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-md`;
-            notification.innerHTML = `
-                <span class="text-2xl">${icons[type]}</span>
-                <span class="flex-1 font-semibold">${message}</span>
-                <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200 text-xl font-bold">×</button>
-            `;
-            
-            container.appendChild(notification);
-            
-            if (type === 'success' || type === 'info') {
-                playNotificationSound();
-            }
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideInRight 0.5s ease-out reverse';
-                setTimeout(() => notification.remove(), 500);
-            }, 5000);
-        }
-
-        // ===============================================
         // CONFIGURACIÓN DE SUPABASE
-        // ===============================================
         const SUPABASE_URL = 'https://hynubiwdlpkfzqgzahlp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5bnViaXdkbHBrZnpxZ3phaGxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2MDM1MzYsImV4cCI6MjA3OTE3OTUzNn0.xbiu1OVD9I8V_NYj0gem1zK5wICW_cXrxIoRRwQFbAg';
 
@@ -342,19 +299,14 @@
             password: 'geraldmontoya'
         };
 
-        // ===============================================
-        // UTILIDADES DE HORA - ✅ CORREGIDO PARA ECUADOR
-        // ===============================================
+        // UTILIDADES DE HORA - ECUADOR
         const HoraUtils = {
-            // ✅ CORREGIDO: Obtener hora actual de Ecuador (UTC-5) de forma precisa
             getHoraEcuador() {
                 const ahora = new Date();
-                
-                // Método 1: Usar la zona horaria de Ecuador directamente
                 try {
                     const opciones = { 
                         timeZone: 'America/Guayaquil', 
-                        year: 'numeric', 
+                        year: 'numeric',
                         month: '2-digit', 
                         day: '2-digit',
                         hour: '2-digit', 
@@ -382,38 +334,31 @@
                         parseInt(valores.second)
                     );
                     
-                    console.log('✅ Hora Ecuador calculada:', horaEcuador.toLocaleString('es-EC'));
                     return horaEcuador;
                     
                 } catch (error) {
-                    // Fallback: calcular manualmente
-                    console.warn('⚠️ Usando fallback para hora Ecuador');
                     const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
                     return new Date(utc + (-5 * 3600000));
                 }
             },
             
-            // Convertir hora como "10:30" a minutos desde medianoche
             horaAMinutos(hora) {
                 const [h, m] = hora.split(':').map(Number);
                 return h * 60 + m;
             },
             
-            // Convertir minutos a formato "HH:MM"
             minutosAHora(minutos) {
                 const h = Math.floor(minutos / 60);
                 const m = minutos % 60;
                 return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
             },
             
-            // Agregar minutos a una hora
             agregarMinutos(hora, minutos) {
                 const minutosActual = this.horaAMinutos(hora);
                 const nuevosMinutos = minutosActual + minutos;
                 return this.minutosAHora(nuevosMinutos);
             },
             
-            // Formatear a AM/PM
             formatearAMPM(hora) {
                 const [h, m] = hora.split(':').map(Number);
                 const ampm = h >= 12 ? 'p.m' : 'a.m';
@@ -421,60 +366,28 @@
                 return `${hora12}:${m.toString().padStart(2, '0')} ${ampm}`;
             },
             
-            // Generar rango de 40 minutos
             generarRango(horaInicio) {
                 const horaFin = this.agregarMinutos(horaInicio, 40);
                 return `${this.formatearAMPM(horaInicio)} a ${this.formatearAMPM(horaFin)}`;
             },
             
-            // ✅ FUNCIÓN CORREGIDA: Verificar si la cita ya TERMINÓ (hora de fin ya pasó)
             citaYaTermino(horaInicio) {
                 const horaEcuador = this.getHoraEcuador();
                 const horaActualMinutos = horaEcuador.getHours() * 60 + horaEcuador.getMinutes();
-                
-                // Calcular hora de FIN (inicio + 40 minutos)
                 const horaInicioMinutos = this.horaAMinutos(horaInicio);
                 const horaFinMinutos = horaInicioMinutos + 40;
-                
-                console.log(`⏰ Verificando si cita terminó:`, {
-                    horaEcuadorCompleta: horaEcuador.toLocaleString('es-EC'),
-                    horaActual24h: `${horaEcuador.getHours()}:${horaEcuador.getMinutes()}`,
-                    horaActualMinutos: horaActualMinutos,
-                    horaInicio: horaInicio,
-                    horaInicioMinutos: horaInicioMinutos,
-                    horaFinMinutos: horaFinMinutos,
-                    yaTermino: horaActualMinutos >= horaFinMinutos
-                });
-                
                 return horaActualMinutos >= horaFinMinutos;
             },
             
-            // ✅ FUNCIÓN CORREGIDA: Verificar si la cita está EN PROCESO (entre inicio y fin)
             citaEnProceso(horaInicio) {
                 const horaEcuador = this.getHoraEcuador();
                 const horaActualMinutos = horaEcuador.getHours() * 60 + horaEcuador.getMinutes();
-                
                 const horaInicioMinutos = this.horaAMinutos(horaInicio);
                 const horaFinMinutos = horaInicioMinutos + 40;
-                
-                const enProceso = horaActualMinutos >= horaInicioMinutos && horaActualMinutos < horaFinMinutos;
-                
-                console.log(`🔄 Verificando si cita EN PROCESO:`, {
-                    horaEcuadorCompleta: horaEcuador.toLocaleString('es-EC'),
-                    horaActual24h: `${horaEcuador.getHours()}:${horaEcuador.getMinutes()}`,
-                    horaActualMinutos: horaActualMinutos,
-                    horaInicio: horaInicio,
-                    horaInicioMinutos: horaInicioMinutos,
-                    horaFinMinutos: horaFinMinutos,
-                    enProceso: enProceso
-                });
-                
-                return enProceso;
+                return horaActualMinutos >= horaInicioMinutos && horaActualMinutos < horaFinMinutos;
             },
             
-            // Extraer la hora de INICIO del rango "10:30 p.m a 11:10 p.m"
             extraerHoraInicio(rangoHora) {
-                // Extraer la primera hora en formato 24h
                 const match = rangoHora.match(/(\d{1,2}):(\d{2})\s*(a\.m|p\.m)/);
                 if (!match) return null;
                 
@@ -482,7 +395,6 @@
                 const minutos = match[2];
                 const periodo = match[3];
                 
-                // Convertir a formato 24h
                 if (periodo === 'p.m' && hora !== 12) {
                     hora += 12;
                 } else if (periodo === 'a.m' && hora === 12) {
@@ -493,9 +405,7 @@
             }
         };
 
-        // ===============================================
         // ESTADO DE LA APLICACIÓN
-        // ===============================================
         let state = {
             vista: 'login',
             tipoUsuario: null,
@@ -511,16 +421,14 @@
                 enProceso: 0,
                 atendidos: 0,
                 rechazados: 0,
-                tiempoPromedio: 0
+                no_asistio: 0
             },
             filtroTurnos: 'todos',
             busqueda: '',
             historialEstudiante: []
         };
 
-        // ===============================================
         // CLIENTE SUPABASE
-        // ===============================================
         const supabase = {
             from: (table) => ({
                 select: async (columns = '*') => {
@@ -572,37 +480,20 @@
             })
         };
 
-        // ===============================================
-        // FUNCIONES DE DATOS - ✅ CORREGIDO LÓGICA DE AUTO-MARCADO
-        // ===============================================
-        
-        // ✅ FUNCIÓN CORREGIDA: Verificar y actualizar estados de turnos según la hora
+        // FUNCIONES DE DATOS
         async function verificarYActualizarEstadosTurnos(turnos) {
             for (const turno of turnos) {
                 if (turno.estado === 'aceptado' && turno.hora_atencion_programada) {
-                    // Extraer la hora de INICIO del rango
                     const horaInicio = HoraUtils.extraerHoraInicio(turno.hora_atencion_programada);
                     
-                    if (!horaInicio) {
-                        console.warn(`⚠️ No se pudo extraer hora de inicio del turno ${turno.id}`);
-                        continue;
-                    }
+                    if (!horaInicio) continue;
                     
-                    // Verificar si la cita ya TERMINÓ (pasó la hora de fin)
                     if (HoraUtils.citaYaTermino(horaInicio)) {
-                        console.log(`✅ Auto-marcando turno ${turno.id} como ATENDIDO (cita terminó)`);
+                        console.log(`✅ Auto-marcando turno ${turno.id} como ATENDIDO`);
                         await supabase.from('turnos').update({ 
                             estado: 'atendido',
                             hora_atencion: new Date().toISOString()
                         }).eq('id', turno.id);
-                    }
-                    // Verificar si la cita está EN PROCESO
-                    else if (HoraUtils.citaEnProceso(horaInicio)) {
-                        console.log(`🔄 Turno ${turno.id} está EN PROCESO`);
-                        // Aquí podrías agregar un estado "en_proceso" si lo necesitas
-                    }
-                    else {
-                        console.log(`⏰ Turno ${turno.id} aún no comienza (en espera)`);
                     }
                 }
             }
@@ -610,7 +501,6 @@
         
         async function cargarDatos() {
             try {
-                // Cargar configuración
                 const { data: config } = await supabase.from('configuracion').select('*');
                 if (config && config.length > 0) {
                     const nuevoEstado = config[0].disponible;
@@ -620,48 +510,27 @@
                     }
                 }
                 
-                // Cargar turnos
                 const { data: turnosData } = await supabase.from('turnos').select('*');
                 if (turnosData) {
-                    // ✅ Verificar y actualizar estados según la hora
                     await verificarYActualizarEstadosTurnos(turnosData);
                     
-                    // Recargar después de actualizar
                     const { data: turnosActualizados } = await supabase.from('turnos').select('*');
                     const turnosOrdenados = turnosActualizados.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                    
-                    // Detectar cambios en los turnos
-                    detectarCambiosTurnos(state.turnos, turnosOrdenados);
                     
                     state.turnos = turnosOrdenados;
                     calcularEstadisticas();
                     
-                    // Actualizar solo las partes necesarias
                     if (state.vista === 'dece') {
                         actualizarEstadisticasUI();
                         actualizarListaTurnosUI();
                     }
                 }
                 
-                // Actualizar mi turno si existe
                 const miTurnoId = localStorage.getItem('miTurnoId');
                 if (miTurnoId && turnosData) {
                     const turnoActualizado = state.turnos.find(t => t.id === parseInt(miTurnoId));
                     if (turnoActualizado) {
-                        const estadoAnterior = state.miTurno?.estado;
                         state.miTurno = turnoActualizado;
-                        
-                        // Notificar al estudiante si su turno cambió de estado
-                        if (state.vista === 'estudiante' && estadoAnterior && estadoAnterior !== turnoActualizado.estado) {
-                            if (turnoActualizado.estado === 'aceptado') {
-                                showNotification('¡Tu turno ha sido aceptado! 🎉', 'success');
-                                verificarSiEsMiTurno();
-                            } else if (turnoActualizado.estado === 'rechazado') {
-                                showNotification('Tu turno fue rechazado. Revisa el motivo.', 'warning');
-                            } else if (turnoActualizado.estado === 'atendido') {
-                                showNotification('Tu cita ha sido completada ✅', 'success');
-                            }
-                        }
                         
                         if (state.vista === 'estudiante' && state.miTurno) {
                             actualizarMiTurnoUI();
@@ -675,35 +544,6 @@
                 console.error('Error al cargar datos:', error);
             }
         }
-        
-        function detectarCambiosTurnos(turnosAnteriores, turnosNuevos) {
-            const idsAnteriores = new Set(turnosAnteriores.map(t => t.id));
-            const nuevos = turnosNuevos.filter(t => !idsAnteriores.has(t.id));
-            
-            if (nuevos.length > 0 && state.vista === 'dece') {
-                showNotification(`${nuevos.length} nuevo${nuevos.length > 1 ? 's' : ''} turno${nuevos.length > 1 ? 's' : ''}`, 'info');
-            }
-        }
-        
-        function verificarSiEsMiTurno() {
-            if (!state.miTurno || state.miTurno.estado !== 'aceptado') return;
-            
-            const turnosAceptadosAntes = state.turnos.filter(t => 
-                t.estado === 'aceptado' && 
-                t.numero_turno < state.miTurno.numero_turno
-            ).length;
-            
-            if (turnosAceptadosAntes === 0) {
-                // Verificar si ya llegó la hora de la cita
-                if (state.miTurno.hora_atencion_programada) {
-                    const horaInicio = HoraUtils.extraerHoraInicio(state.miTurno.hora_atencion_programada);
-                    if (horaInicio && HoraUtils.citaEnProceso(horaInicio)) {
-                        showNotification('🎉 ¡ES TU TURNO! Dirígete al DECE ahora', 'success');
-                        playNotificationSound();
-                    }
-                }
-            }
-        }
 
         function calcularEstadisticas() {
             const hoy = new Date().toLocaleDateString('es-ES');
@@ -711,7 +551,6 @@
                 new Date(t.created_at).toLocaleDateString('es-ES') === hoy
             );
             
-            // Calcular cuántos están en proceso
             let enProceso = 0;
             state.turnos.forEach(t => {
                 if (t.estado === 'aceptado' && t.hora_atencion_programada) {
@@ -729,22 +568,8 @@
                 enProceso: enProceso,
                 atendidos: state.turnos.filter(t => t.estado === 'atendido').length,
                 rechazados: state.turnos.filter(t => t.estado === 'rechazado').length,
-                no_asistio: state.turnos.filter(t => t.estado === 'no_asistio').length,
-                tiempoPromedio: calcularTiempoPromedio()
+                no_asistio: state.turnos.filter(t => t.estado === 'no_asistio').length
             };
-        }
-
-        function calcularTiempoPromedio() {
-            const turnosAtendidos = state.turnos.filter(t => t.estado === 'atendido' && t.hora_atencion);
-            if (turnosAtendidos.length === 0) return 0;
-            
-            const tiempos = turnosAtendidos.map(t => {
-                const inicio = new Date(t.created_at);
-                const fin = new Date(t.hora_atencion);
-                return (fin - inicio) / 1000 / 60;
-            });
-            
-            return Math.round(tiempos.reduce((a, b) => a + b, 0) / tiempos.length);
         }
 
         async function verificarConfiguracion() {
@@ -762,9 +587,7 @@
             }
         }
 
-        // ===============================================
-        // FUNCIONES DE ACTUALIZACIÓN UI (SIN PARPADEO)
-        // ===============================================
+        // FUNCIONES DE ACTUALIZACIÓN UI
         function actualizarEstadoDECEUI() {
             const elemento = document.getElementById('estadoDECE');
             if (!elemento) return;
@@ -772,7 +595,7 @@
             const disponible = state.estadoDECE.disponible;
             elemento.innerHTML = `
                 <div class="${disponible ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-red-400 to-red-500'} p-10 rounded-2xl text-center text-white shadow-xl smooth-update">
-                    <div class="text-7xl mb-4 ">${disponible ? '✅' : '❌'}</div>
+                    <div class="text-7xl mb-4">${disponible ? '✅' : '❌'}</div>
                     <div class="text-4xl font-black mb-3">
                         ${disponible ? 'DISPONIBLE' : 'NO DISPONIBLE'}
                     </div>
@@ -787,27 +610,27 @@
             
             elemento.innerHTML = `
                 <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl text-center border-2 border-gray-300 card-hover smooth-update">
+                    <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl text-center border-2 border-gray-300 card-hover">
                         <div class="text-4xl font-black text-gray-700 mb-2">${state.estadisticas.totalHoy}</div>
                         <div class="text-sm text-gray-600 font-semibold">📋 Total hoy</div>
                     </div>
-                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl text-center border-2 border-yellow-300 card-hover smooth-update">
+                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl text-center border-2 border-yellow-300 card-hover">
                         <div class="text-4xl font-black text-yellow-700 mb-2">${state.turnos.filter(t => t.estado === 'pendiente' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                         <div class="text-sm text-yellow-600 font-semibold">⏳ Pendientes</div>
                     </div>
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center border-2 border-green-300 card-hover smooth-update">
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center border-2 border-green-300 card-hover">
                         <div class="text-4xl font-black text-green-700 mb-2">${state.turnos.filter(t => t.estado === 'aceptado' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                         <div class="text-sm text-green-600 font-semibold">✅ En espera</div>
                     </div>
-                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center border-2 border-orange-300 card-hover smooth-update">
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center border-2 border-orange-300 card-hover">
                         <div class="text-4xl font-black text-orange-700 mb-2">${state.estadisticas.enProceso}</div>
                         <div class="text-sm text-orange-600 font-semibold">🔄 En proceso</div>
                     </div>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl text-center border-2 border-blue-300 card-hover smooth-update">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl text-center border-2 border-blue-300 card-hover">
                         <div class="text-4xl font-black text-blue-700 mb-2">${state.turnos.filter(t => t.estado === 'atendido' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                         <div class="text-sm text-blue-600 font-semibold">✔️ Completados</div>
                     </div>
-                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl text-center border-2 border-red-300 card-hover smooth-update">
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl text-center border-2 border-red-300 card-hover">
                         <div class="text-4xl font-black text-red-700 mb-2">${state.estadisticas.no_asistio}</div>
                         <div class="text-sm text-red-600 font-semibold">🚫 No asistió</div>
                     </div>
@@ -866,9 +689,7 @@
             return turnosFiltrados;
         }
 
-        // ===============================================
         // AUTENTICACIÓN
-        // ===============================================
         function loginEstudiante(email, password) {
             const usuarios = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
             const usuario = usuarios.find(u => u.email === email && u.password === password);
@@ -887,7 +708,6 @@
                         else localStorage.removeItem('miTurnoId');
                     }
                     
-                    // Cargar historial
                     state.historialEstudiante = state.turnos.filter(t => t.email_estudiante === email);
                     
                     render();
@@ -954,9 +774,7 @@
             showNotification('Sesión cerrada', 'info');
         }
 
-        // ===============================================
         // GESTIÓN DE TURNOS
-        // ===============================================
         async function registrarTurno(form) {
             if (!state.estadoDECE.disponible) {
                 showNotification('El DECE no está disponible en este momento', 'warning');
@@ -964,36 +782,42 @@
             }
             
             try {
-                // ✅ Crear turno con email del usuario asegurado
+                const emailEstudiante = state.usuarioActual?.email;
+                
+                if (!emailEstudiante || emailEstudiante.trim() === '') {
+                    showNotification('Error: No se pudo obtener tu email', 'error');
+                    return false;
+                }
+                
                 const nuevoTurno = {
                     nombre: form.nombre,
                     cedula: form.cedula,
                     curso: form.curso,
                     motivo: form.motivo,
-                    situacion: form.situacion,
+                    situacion: form.situacion || '',
                     estado: 'pendiente',
                     numero_turno: state.turnos.length + 1,
-                    email_estudiante: state.usuarioActual.email // ✅ Asegurar que el email se guarde
+                    email_estudiante: emailEstudiante.trim()
                 };
                 
-                console.log('📝 Registrando turno con datos:', nuevoTurno);
-                
                 const { data, error } = await supabase.from('turnos').insert([nuevoTurno]);
+                
                 if (error) throw error;
                 
                 if (data && data.length > 0) {
-                    localStorage.setItem('miTurnoId', data[0].id);
+                    const turnoGuardado = data[0];
+                    localStorage.setItem('miTurnoId', turnoGuardado.id);
                     await cargarDatos();
                     
-                    const turnoCreado = state.turnos.find(t => t.id === data[0].id);
+                    const turnoCreado = state.turnos.find(t => t.id === turnoGuardado.id);
                     if (turnoCreado) state.miTurno = turnoCreado;
                     
-                    showNotification('¡Turno registrado exitosamente!', 'success');
+                    showNotification('¡Turno registrado exitosamente! 🎉', 'success');
                     render();
                     return true;
                 }
             } catch (error) {
-                console.error('Error completo:', error);
+                console.error('Error:', error);
                 showNotification('Error al registrar el turno: ' + error.message, 'error');
                 return false;
             }
@@ -1020,7 +844,7 @@
                     btn.innerHTML = `<span>${nuevoEstado ? '⏸️ Pausar Sistema' : '▶️ Activar Sistema'}</span>`;
                 }
             } catch (error) {
-                console.error('Error al cambiar disponibilidad:', error);
+                console.error('Error:', error);
                 showNotification('Error: ' + error.message, 'error');
             }
         }
@@ -1035,18 +859,14 @@
                     actualizado.hora_atencion = new Date().toISOString();
                 }
                 
-                const { data, error } = await supabase.from('turnos').update(actualizado).eq('id', turnoId);
+                const { error } = await supabase.from('turnos').update(actualizado).eq('id', turnoId);
                 if (error) throw error;
                 
-                // Enviar email si se acepta el turno
                 if (nuevoEstado === 'aceptado') {
-                    await cargarDatos(); // Recargar para obtener datos actualizados
+                    await cargarDatos();
                     const turnoActualizado = state.turnos.find(t => t.id === turnoId);
                     if (turnoActualizado) {
-                        console.log('📧 Turno actualizado encontrado para enviar email:', turnoActualizado);
                         await enviarEmailAceptacion(turnoActualizado);
-                    } else {
-                        console.warn('⚠️ No se encontró el turno actualizado para enviar email');
                     }
                 } else {
                     await cargarDatos();
@@ -1060,26 +880,15 @@
                 };
                 
                 showNotification(mensajes[nuevoEstado] || 'Turno actualizado', 'success');
+                
             } catch (error) {
-                console.error('Error al actualizar turno:', error);
+                console.error('Error:', error);
                 showNotification('Error: ' + error.message, 'error');
             }
         }
 
-        async function eliminarTurno(turnoId) {
-            if (!confirm('¿Estás seguro de eliminar este turno?')) return;
-            try {
-                const { error } = await supabase.from('turnos').delete().eq('id', turnoId);
-                if (error) throw error;
-                await cargarDatos();
-                showNotification('Turno eliminado', 'info');
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-        
         async function agregarNotaDECE(turnoId) {
-            const nota = prompt('Agregar nota interna del DECE:\n(Esta nota no será visible para el estudiante)');
+            const nota = prompt('Agregar nota interna del DECE:');
             if (!nota) return;
             
             try {
@@ -1092,37 +901,33 @@
             }
         }
 
-        // ===============================================
-        // RENDERIZADO - PANTALLA DE LOGIN
-        // ===============================================
+        // RENDERIZADO
         function renderLogin() {
             return `
-                <div class="flex items-center justify-center min-h-screen p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #3b82f6 100%);">
-                    <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full scale-in relative overflow-hidden border-4 border-yellow-400">
-                        <!-- Barra superior amarilla institucional -->
+                <div class="flex items-center justify-center min-h-screen p-4 fade-in">
+                    <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full relative overflow-hidden border-4 border-yellow-400">
                         <div class="absolute top-0 left-0 w-full h-3" style="background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);"></div>
                         
                         <div class="text-center mb-8">
-                            <!-- Logo Real de UEPDC -->
                             <div class="flex justify-center mb-6">
-                                <img src="https://i.ibb.co/dwm03mTb/image-30.png" alt="UEPDC Logo" class="logo-institucional" style="filter: drop-shadow(0 10px 30px rgba(30, 58, 138, 0.3));">
+                                <img src="https://i.ibb.co/dwm03mTb/image-30.png" alt="UEPDC Logo" class="logo-institucional">
                             </div>
                             
-                            <h1 class="text-4xl font-black mb-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            <h1 class="text-4xl font-black mb-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                                 Sistema de Turnos DECE
                             </h1>
                             <p class="text-gray-700 text-lg font-semibold">Departamento de Consejería Estudiantil</p>
-                            <div class="mt-4 inline-block px-5 py-2 rounded-full text-sm font-bold" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1e3a8a; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);">
+                            <div class="mt-4 inline-block px-5 py-2 rounded-full text-sm font-bold" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1e3a8a;">
                                 🏫 UEPDC
                             </div>
                         </div>
                         
                         <div class="mb-6">
                             <div class="flex gap-3 mb-6">
-                                <button id="btnEstudiante" class="flex-1 py-4 px-6 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+                                <button id="btnEstudiante" class="flex-1 py-4 px-6 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
                                     <span>👨‍🎓 Estudiante</span>
                                 </button>
-                                <button id="btnDECE" class="flex-1 py-4 px-6 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 btn-modern" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+                                <button id="btnDECE" class="flex-1 py-4 px-6 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
                                     <span>👨‍⚕️ DECE</span>
                                 </button>
                             </div>
@@ -1141,7 +946,7 @@
                         <button id="btnLoginEst" class="flex-1 py-3 border-b-4 font-bold text-lg transition-all" style="border-color: #1e3a8a; color: #1e3a8a;">
                             Iniciar Sesión
                         </button>
-                        <button id="btnRegistroEst" class="flex-1 py-3 text-gray-500 font-bold text-lg transition-all" style="hover: color: #1e3a8a;">
+                        <button id="btnRegistroEst" class="flex-1 py-3 text-gray-500 font-bold text-lg transition-all">
                             Registrarse
                         </button>
                     </div>
@@ -1154,14 +959,14 @@
             return `
                 <form id="loginEstForm" class="space-y-5 fade-in">
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo Electrónico</label>
-                        <input type="email" name="email" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none transition-all text-lg" style="border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);" placeholder="tu@correo.com">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo</label>
+                        <input type="email" name="email" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="tu@correo.com">
                     </div>
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🔒 Contraseña</label>
-                        <input type="password" name="password" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none transition-all text-lg" style="border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);" placeholder="••••••••">
+                        <input type="password" name="password" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="••••••••">
                     </div>
-                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
                         <span>🚀 Iniciar Sesión</span>
                     </button>
                 </form>
@@ -1172,26 +977,26 @@
             return `
                 <form id="registroEstForm" class="space-y-4 fade-in">
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">👤 Nombre Completo</label>
-                        <input type="text" name="nombre" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none transition-all" style="border-color: #60a5fa;" placeholder="Nombre completo">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">👤 Nombre</label>
+                        <input type="text" name="nombre" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Nombre completo">
                     </div>
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo Electrónico</label>
-                        <input type="email" name="email" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none transition-all" style="border-color: #60a5fa;" placeholder="tu@correo.com">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo</label>
+                        <input type="email" name="email" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="tu@correo.com">
                     </div>
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🆔 Cédula</label>
-                        <input type="text" name="cedula" required pattern="[0-9]{10}" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none transition-all" style="border-color: #60a5fa;" placeholder="0123456789">
+                        <input type="text" name="cedula" required pattern="[0-9]{10}" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="0123456789">
                     </div>
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📚 Curso</label>
-                        <input type="text" name="curso" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none transition-all" style="border-color: #60a5fa;" placeholder="Ej: 3ro BGU A">
+                        <input type="text" name="curso" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="3ro BGU A">
                     </div>
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🔒 Contraseña</label>
-                        <input type="password" name="password" required minlength="6" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none transition-all" style="border-color: #60a5fa;" placeholder="Mínimo 6 caracteres">
+                        <input type="password" name="password" required minlength="6" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Mínimo 6 caracteres">
                     </div>
-                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
                         <span>✨ Crear Cuenta</span>
                     </button>
                 </form>
@@ -1209,15 +1014,15 @@
                         </p>
                     </div>
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #92400e;">📧 Correo Electrónico</label>
-                        <input type="email" name="email" required class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none transition-all text-lg" style="border-color: #fbbf24;" placeholder="deceuepdcdece@uepdc.edu.ec">
+                        <label class="block font-bold mb-2 text-sm" style="color: #92400e;">📧 Correo</label>
+                        <input type="email" name="email" required class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #fbbf24;" placeholder="deceuepdcdece@uepdc.edu.ec">
                     </div>
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #92400e;">🔒 Contraseña</label>
-                        <input type="password" name="password" required class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none transition-all text-lg" style="border-color: #fbbf24;" placeholder="••••••••">
+                        <input type="password" name="password" required class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #fbbf24;" placeholder="••••••••">
                     </div>
-                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 btn-modern" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
-                        <span>🚀 Acceder al Panel DECE</span>
+                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+                        <span>🚀 Acceder</span>
                     </button>
                     <button type="button" id="btnVolverLogin" class="w-full py-3 rounded-xl font-bold transition-all" style="background: #e5e7eb; color: #374151;">
                         ← Volver
@@ -1226,9 +1031,6 @@
             `;
         }
 
-        // ===============================================
-        // RENDERIZADO - PANEL ESTUDIANTE
-        // ===============================================
         function renderEstudiante() {
             const miTurnoId = localStorage.getItem('miTurnoId');
             const tieneTurnoActivo = miTurnoId && state.turnos.find(t => 
@@ -1239,7 +1041,6 @@
             return `
                 <div class="p-4 fade-in">
                     <div class="max-w-5xl mx-auto">
-                        <!-- Header -->
                         <div class="bg-white rounded-3xl shadow-2xl p-6 mb-6 slide-in-left">
                             <div class="flex justify-between items-center flex-wrap gap-4">
                                 <div class="flex items-center gap-4">
@@ -1247,21 +1048,16 @@
                                         ${state.usuarioActual.nombre.charAt(0)}
                                     </div>
                                     <div>
-                                        <h1 class="text-3xl font-bold" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                        <h1 class="text-3xl font-bold" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                                             Panel Estudiante
                                         </h1>
                                         <p class="text-gray-600 text-lg"><span class="font-bold" style="color: #1e40af;">${state.usuarioActual.nombre}</span> • ${state.usuarioActual.curso}</p>
                                     </div>
                                 </div>
-                                <div class="flex gap-3 flex-wrap">
+                                <div class="flex gap-3">
                                     ${tieneTurnoActivo && !state.miTurno ? `
                                         <button onclick="verMiTurno()" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all btn-modern font-bold">
                                             <span>🎫 Ver mi turno</span>
-                                        </button>
-                                    ` : ''}
-                                    ${state.historialEstudiante.length > 0 ? `
-                                        <button onclick="toggleHistorial()" class="gradient-bg-3 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all btn-modern font-bold">
-                                            <span>📜 Mi Historial (${state.historialEstudiante.length})</span>
                                         </button>
                                     ` : ''}
                                     <button onclick="cerrarSesion()" class="bg-red-500 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:bg-red-600 transition-all btn-modern font-bold">
@@ -1271,10 +1067,6 @@
                             </div>
                         </div>
 
-                        <!-- Historial (oculto por defecto) -->
-                        <div id="historialContainer" class="hidden"></div>
-
-                        <!-- Contenido principal -->
                         <div id="miTurnoContainer">
                             ${state.miTurno ? renderMiTurnoContent() : renderSolicitudTurno()}
                         </div>
@@ -1285,14 +1077,13 @@
 
         function renderSolicitudTurno() {
             return `
-                <!-- Estado del DECE -->
                 <div class="bg-white rounded-3xl shadow-2xl p-8 mb-6 slide-in-right">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                         <span class="text-4xl">📡</span> Estado del DECE
                     </h2>
                     <div id="estadoDECE">
                         <div class="${state.estadoDECE.disponible ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-red-400 to-red-500'} p-10 rounded-2xl text-center text-white shadow-xl">
-                            <div class="text-7xl mb-4 ">${state.estadoDECE.disponible ? '✅' : '❌'}</div>
+                            <div class="text-7xl mb-4">${state.estadoDECE.disponible ? '✅' : '❌'}</div>
                             <div class="text-4xl font-black mb-3">
                                 ${state.estadoDECE.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE'}
                             </div>
@@ -1301,7 +1092,6 @@
                     </div>
                 </div>
 
-                <!-- Formulario de solicitud -->
                 <div class="bg-white rounded-3xl shadow-2xl p-8 scale-in">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                         <span class="text-4xl">📝</span> Solicitar Turno
@@ -1309,7 +1099,7 @@
                     <form id="formTurno" class="space-y-6">
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block font-bold text-gray-700 mb-2">👤 Nombre Completo</label>
+                                <label class="block font-bold text-gray-700 mb-2">👤 Nombre</label>
                                 <input type="text" name="nombre" value="${state.usuarioActual.nombre}" readonly class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl bg-gray-50 text-lg">
                             </div>
                             <div>
@@ -1322,7 +1112,7 @@
                             </div>
                             <div>
                                 <label class="block font-bold text-gray-700 mb-2">📋 Motivo *</label>
-                                <select name="motivo" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none transition-all text-lg" style="border-color: #60a5fa;" onchange="this.style.borderColor='#3b82f6'">
+                                <select name="motivo" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;">
                                     <option value="">Seleccione un motivo</option>
                                     <option value="Apoyo Académico">📖 Apoyo Académico</option>
                                     <option value="Orientación Personal">💭 Orientación Personal</option>
@@ -1331,17 +1121,17 @@
                                     <option value="Orientación Vocacional">🎯 Orientación Vocacional</option>
                                     <option value="Situación de Riesgo">🚨 Situación de Riesgo</option>
                                     <option value="Problemas de Salud Mental">🧠 Problemas de Salud Mental</option>
-                                    <option value="Acoso Escolar (Bullying)">🛡️ Acoso Escolar (Bullying)</option>
+                                    <option value="Acoso Escolar (Bullying)">🛡️ Acoso Escolar</option>
                                     <option value="Otros">📝 Otros</option>
                                 </select>
                             </div>
                         </div>
                         <div>
-                            <label class="block font-bold text-gray-700 mb-2">💬 Describe tu situación (opcional)</label>
-                            <textarea name="situacion" rows="4" class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none transition-all text-lg" style="border-color: #60a5fa;" placeholder="Cuéntanos más detalles sobre tu situación... Esto ayudará al DECE a entender mejor tu caso."></textarea>
+                            <label class="block font-bold text-gray-700 mb-2">💬 Describe tu situación</label>
+                            <textarea name="situacion" rows="4" class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="Opcional..."></textarea>
                         </div>
-                        <button type="submit" ${!state.estadoDECE.disponible ? 'disabled' : ''} class="w-full gradient-bg text-white py-5 rounded-xl font-black text-xl hover:shadow-2xl transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed btn-modern">
-                            <span>✨ Solicitar Turno Ahora</span>
+                        <button type="submit" ${!state.estadoDECE.disponible ? 'disabled' : ''} class="w-full gradient-bg text-white py-5 rounded-xl font-black text-xl hover:shadow-2xl transition-all disabled:bg-gray-400 disabled:cursor-not-allowed btn-modern">
+                            <span>✨ Solicitar Turno</span>
                         </button>
                     </form>
                 </div>
@@ -1351,7 +1141,6 @@
         function renderMiTurnoContent() {
             const turno = state.miTurno;
             
-            // Verificar si la cita está en proceso
             let estaEnProceso = false;
             if (turno.hora_atencion_programada) {
                 const horaInicio = HoraUtils.extraerHoraInicio(turno.hora_atencion_programada);
@@ -1373,89 +1162,79 @@
             ).length;
             
             return `
-                <div class="bg-white rounded-3xl shadow-2xl p-8 scale-in">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                        <span class="text-4xl">🎫</span> Mi Turno
-                    </h2>
-                    
-                    ${(turno.estado === 'pendiente' || turno.estado === 'aceptado') ? `
-                        <div class="gradient-bg text-white rounded-2xl p-10 text-center mb-6 shadow-2xl">
-                            <div class="text-xl mb-3 font-semibold">📊 Tu posición en la fila de espera</div>
-                            <div class="text-8xl font-black my-6">#${miPosicion}</div>
-                            <div class="text-2xl mb-4 font-bold">de ${totalEnCola} persona${totalEnCola !== 1 ? 's' : ''} esperando</div>
-                            <div class="border-t-2 border-white/30 pt-6 mt-6 space-y-2">
-                                <div class="text-lg">📅 ${new Date(turno.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                                <div class="text-lg">⏰ ${new Date(turno.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
-                                <div class="text-lg mt-4">👤 ${turno.nombre}</div>
-                                <div class="text-lg">📚 ${turno.curso}</div>
-                                <div class="text-lg mt-2">📋 ${turno.motivo}</div>
-                            </div>
+                ${(turno.estado === 'pendiente' || turno.estado === 'aceptado') ? `
+                    <div class="gradient-bg text-white rounded-2xl p-10 text-center mb-6 shadow-2xl">
+                        <div class="text-xl mb-3 font-semibold">📊 Tu posición en la fila</div>
+                        <div class="text-8xl font-black my-6">#${miPosicion}</div>
+                        <div class="text-2xl mb-4 font-bold">de ${totalEnCola} persona${totalEnCola !== 1 ? 's' : ''} esperando</div>
+                        <div class="border-t-2 border-white/30 pt-6 mt-6 space-y-2">
+                            <div class="text-lg">📅 ${new Date(turno.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                            <div class="text-lg">⏰ ${new Date(turno.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div class="text-lg mt-4">👤 ${turno.nombre}</div>
+                            <div class="text-lg">📚 ${turno.curso}</div>
+                            <div class="text-lg mt-2">📋 ${turno.motivo}</div>
                         </div>
-                    ` : `
-                        <div class="gradient-bg text-white rounded-2xl p-10 text-center mb-6 shadow-2xl">
-                            <div class="text-xl mb-3 font-semibold">Tu número de turno</div>
-                            <div class="text-8xl font-black my-6">#${turno.numero_turno}</div>
-                            <div class="text-xl">📅 ${new Date(turno.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                            <div class="text-xl mt-2">⏰ ${new Date(turno.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
-                            <div class="border-t-2 border-white/30 pt-6 mt-6 space-y-2">
-                                <div class="text-xl">👤 ${turno.nombre}</div>
-                                <div class="text-xl">📚 ${turno.curso}</div>
-                                <div class="text-xl mt-2">📋 ${turno.motivo}</div>
-                            </div>
-                        </div>
-                    `}
-                    
-                    ${estaEnProceso ? `
-                        <div class="badge-en-proceso text-white p-8 rounded-2xl mb-6 text-center shadow-xl">
-                            <div class="text-5xl mb-3">🔄</div>
-                            <div class="font-black text-3xl mb-3">¡CITA EN PROCESO!</div>
-                            <div class="text-xl font-semibold">El DECE te está atendiendo ahora</div>
-                            ${turno.hora_atencion_programada ? `
-                                <div class="mt-4 text-2xl font-black">
-                                    🕐 ${turno.hora_atencion_programada}
-                                </div>
-                            ` : ''}
-                        </div>
-                    ` : turno.estado === 'aceptado' && turnosAceptadosAntes === 0 ? `
-                        <div class="bg-gradient-to-r from-green-400 to-green-500 text-white p-8 rounded-2xl mb-6 text-center shadow-xl">
-                            <div class="text-5xl mb-3">🎉</div>
-                            <div class="font-black text-3xl mb-3">¡ES TU TURNO!</div>
-                            <div class="text-xl font-semibold">Dirígete al DECE ahora</div>
-                            ${turno.hora_atencion_programada ? `
-                                <div class="mt-4 text-2xl font-black">
-                                    🕐 ${turno.hora_atencion_programada}
-                                </div>
-                            ` : ''}
-                        </div>
-                    ` : turno.estado === 'aceptado' && turno.hora_atencion_programada ? `
-                        <div class="bg-gradient-to-r from-green-50 to-green-100 border-4 border-green-500 p-6 rounded-2xl mb-6 text-center">
-                            <div class="text-green-800 font-bold text-2xl mb-3">🕐 Hora programada de atención</div>
-                            <div class="text-green-700 text-5xl font-black mt-3 mb-4">${turno.hora_atencion_programada}</div>
-                            ${turnosAceptadosAntes > 0 ? `
-                                <div class="mt-4 text-green-700 text-lg font-semibold">
-                                    ⏰ ${turnosAceptadosAntes} persona${turnosAceptadosAntes !== 1 ? 's' : ''} antes que tú
-                                </div>
-                            ` : ''}
-                        </div>
-                    ` : ''}
-                    
-                    ${renderEstadoTurnoDetallado(turno)}
-                    
-                    <div class="mt-6 space-y-3">
-                        ${turno.estado === 'atendido' ? `
-                            <button onclick="volverInicio()" class="w-full gradient-bg text-white py-5 rounded-xl hover:shadow-2xl transition-all font-bold text-xl btn-modern">
-                                <span>✅ Finalizar - Solicitar Nuevo Turno</span>
-                            </button>
-                        ` : turno.estado === 'rechazado' ? `
-                            <button onclick="volverInicio()" class="w-full gradient-bg text-white py-5 rounded-xl hover:shadow-2xl transition-all font-bold text-xl btn-modern">
-                                <span>📝 Solicitar Nuevo Turno</span>
-                            </button>
-                        ` : `
-                            <button onclick="cerrarMiTurno()" class="w-full bg-gray-600 text-white py-4 rounded-xl hover:bg-gray-700 hover:shadow-xl transition-all font-bold text-lg">
-                                ⬅️ Ocultar turno
-                            </button>
-                        `}
                     </div>
+                ` : `
+                    <div class="gradient-bg text-white rounded-2xl p-10 text-center mb-6 shadow-2xl">
+                        <div class="text-xl mb-3 font-semibold">Tu número de turno</div>
+                        <div class="text-8xl font-black my-6">#${turno.numero_turno}</div>
+                        <div class="text-xl">📅 ${new Date(turno.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        <div class="text-xl mt-2">⏰ ${new Date(turno.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div class="border-t-2 border-white/30 pt-6 mt-6 space-y-2">
+                            <div class="text-xl">👤 ${turno.nombre}</div>
+                            <div class="text-xl">📚 ${turno.curso}</div>
+                            <div class="text-xl mt-2">📋 ${turno.motivo}</div>
+                        </div>
+                    </div>
+                `}
+                
+                ${estaEnProceso ? `
+                    <div class="badge-en-proceso text-white p-8 rounded-2xl mb-6 text-center shadow-xl">
+                        <div class="text-5xl mb-3">🔄</div>
+                        <div class="font-black text-3xl mb-3">¡CITA EN PROCESO!</div>
+                        <div class="text-xl font-semibold">El DECE te está atendiendo ahora</div>
+                        ${turno.hora_atencion_programada ? `
+                            <div class="mt-4 text-2xl font-black">🕐 ${turno.hora_atencion_programada}</div>
+                        ` : ''}
+                    </div>
+                ` : turno.estado === 'aceptado' && turnosAceptadosAntes === 0 ? `
+                    <div class="bg-gradient-to-r from-green-400 to-green-500 text-white p-8 rounded-2xl mb-6 text-center shadow-xl">
+                        <div class="text-5xl mb-3">🎉</div>
+                        <div class="font-black text-3xl mb-3">¡ES TU TURNO!</div>
+                        <div class="text-xl font-semibold">Dirígete al DECE ahora</div>
+                        ${turno.hora_atencion_programada ? `
+                            <div class="mt-4 text-2xl font-black">🕐 ${turno.hora_atencion_programada}</div>
+                        ` : ''}
+                    </div>
+                ` : turno.estado === 'aceptado' && turno.hora_atencion_programada ? `
+                    <div class="bg-gradient-to-r from-green-50 to-green-100 border-4 border-green-500 p-6 rounded-2xl mb-6 text-center">
+                        <div class="text-green-800 font-bold text-2xl mb-3">🕐 Hora programada</div>
+                        <div class="text-green-700 text-5xl font-black mt-3 mb-4">${turno.hora_atencion_programada}</div>
+                        ${turnosAceptadosAntes > 0 ? `
+                            <div class="mt-4 text-green-700 text-lg font-semibold">
+                                ⏰ ${turnosAceptadosAntes} persona${turnosAceptadosAntes !== 1 ? 's' : ''} antes que tú
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+                
+                ${renderEstadoTurnoDetallado(turno)}
+                
+                <div class="mt-6 space-y-3">
+                    ${turno.estado === 'atendido' ? `
+                        <button onclick="volverInicio()" class="w-full gradient-bg text-white py-5 rounded-xl hover:shadow-2xl transition-all font-bold text-xl btn-modern">
+                            <span>✅ Finalizar - Solicitar Nuevo Turno</span>
+                        </button>
+                    ` : turno.estado === 'rechazado' ? `
+                        <button onclick="volverInicio()" class="w-full gradient-bg text-white py-5 rounded-xl hover:shadow-2xl transition-all font-bold text-xl btn-modern">
+                            <span>📝 Solicitar Nuevo Turno</span>
+                        </button>
+                    ` : `
+                        <button onclick="cerrarMiTurno()" class="w-full bg-gray-600 text-white py-4 rounded-xl hover:bg-gray-700 hover:shadow-xl transition-all font-bold text-lg">
+                            ⬅️ Ocultar turno
+                        </button>
+                    `}
                 </div>
             `;
         }
@@ -1465,28 +1244,28 @@
                 pendiente: {
                     icon: '⏳',
                     titulo: '🟡 PENDIENTE DE REVISIÓN',
-                    mensaje: 'Tu solicitud está siendo revisada por el Departamento de Consejería Estudiantil (DECE). Por favor espera, pronto recibirás una respuesta sobre tu turno.',
+                    mensaje: 'Tu solicitud está siendo revisada por el DECE. Pronto recibirás una respuesta.',
                     bg: 'from-yellow-400 to-yellow-500',
                     textColor: 'text-yellow-900'
                 },
                 aceptado: {
                     icon: '✅',
                     titulo: '🟢 TURNO ACEPTADO',
-                    mensaje: '¡Excelente! Tu turno ha sido aceptado por el DECE. Por favor espera tu llamado para ser atendido. Te notificaremos cuando sea tu momento.',
+                    mensaje: 'Tu turno ha sido aceptado. Espera tu llamado para ser atendido.',
                     bg: 'from-green-400 to-green-500',
                     textColor: 'text-green-900'
                 },
                 rechazado: {
                     icon: '❌',
                     titulo: '🔴 TURNO RECHAZADO',
-                    mensaje: 'Lamentamos informarte que tu solicitud no pudo ser aceptada en este momento. Revisa el motivo del rechazo a continuación.',
+                    mensaje: 'Tu solicitud no pudo ser aceptada. Revisa el motivo a continuación.',
                     bg: 'from-red-400 to-red-500',
                     textColor: 'text-red-900'
                 },
                 atendido: {
                     icon: '✔️',
                     titulo: '🔵 TURNO COMPLETADO',
-                    mensaje: '¡Tu consulta ha sido atendida exitosamente por el DECE! Gracias por usar nuestro sistema de turnos. Si necesitas otro turno, puedes solicitarlo cuando desees.',
+                    mensaje: 'Tu consulta ha sido atendida exitosamente. Gracias por usar el sistema.',
                     bg: 'from-blue-400 to-blue-500',
                     textColor: 'text-blue-900'
                 }
@@ -1500,27 +1279,18 @@
                         <div class="text-6xl">${estado.icon}</div>
                         <div class="flex-1">
                             <div class="font-black text-2xl mb-4">${estado.titulo}</div>
-                            <div class="text-lg leading-relaxed opacity-95">
-                                ${estado.mensaje}
-                            </div>
+                            <div class="text-lg leading-relaxed opacity-95">${estado.mensaje}</div>
                             
                             ${turno.estado === 'rechazado' && turno.motivo_rechazo ? `
                                 <div class="mt-6 p-5 bg-white rounded-xl shadow-lg">
-                                    <div class="font-bold ${estado.textColor} mb-3 text-xl flex items-center gap-2">
-                                        📝 Motivo del rechazo:
-                                    </div>
-                                    <div class="${estado.textColor} text-lg leading-relaxed">${turno.motivo_rechazo}</div>
-                                </div>
-                                <div class="mt-4 p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
-                                    <div class="text-yellow-800 text-base font-semibold">
-                                        💡 <strong>Sugerencia:</strong> Puedes solicitar un nuevo turno especificando mejor tu situación o consultando directamente con el DECE.
-                                    </div>
+                                    <div class="font-bold ${estado.textColor} mb-3 text-xl">📝 Motivo:</div>
+                                    <div class="${estado.textColor} text-lg">${turno.motivo_rechazo}</div>
                                 </div>
                             ` : ''}
                             
                             ${turno.estado === 'atendido' && turno.hora_atencion ? `
                                 <div class="mt-5 pt-5 border-t-2 border-white/30 text-base opacity-90">
-                                    <strong>📅 Atendido el:</strong> ${new Date(turno.hora_atencion).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} a las ${new Date(turno.hora_atencion).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                    <strong>📅 Atendido:</strong> ${new Date(turno.hora_atencion).toLocaleDateString('es-ES')} ${new Date(turno.hora_atencion).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             ` : ''}
                         </div>
@@ -1529,44 +1299,31 @@
             `;
         }
 
-        // ===============================================
-        // RENDERIZADO - PANEL DECE
-        // ===============================================
         function renderDECE() {
-            const horaEcuador = HoraUtils.getHoraEcuador();
-            const hoy = horaEcuador.toLocaleDateString('es-ES');
-            
             return `
                 <div class="p-4 fade-in">
                     <div class="max-w-7xl mx-auto">
-                        <!-- Header DECE -->
                         <div class="bg-white rounded-3xl shadow-2xl p-6 mb-6 slide-in-left">
                             <div class="flex justify-between items-center flex-wrap gap-4">
                                 <div>
-                                    <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                    <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                                         👨‍⚕️ Panel DECE
                                     </h1>
-                                    <p class="text-gray-600 text-lg">Gestión de Turnos y Citas - <span class="font-bold">${hoy}</span></p>
-                                    <p class="text-sm text-gray-500 mt-1">🕐 Hora Ecuador: ${horaEcuador.toLocaleString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
+                                    <p class="text-gray-600 text-lg">Gestión de Turnos - <span class="font-bold">${HoraUtils.getHoraEcuador().toLocaleDateString('es-ES')}</span></p>
                                 </div>
                                 <div class="flex gap-3">
                                     <button onclick="refrescarManual()" class="gradient-bg-3 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all btn-modern font-bold">
                                         <span>🔄 Refrescar</span>
                                     </button>
                                     <button onclick="cerrarSesion()" class="bg-red-500 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:bg-red-600 transition-all btn-modern font-bold">
-                                        <span>🚪 Cerrar Sesión</span>
+                                        <span>🚪 Salir</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Control de disponibilidad -->
                         ${renderControlDisponibilidad()}
-
-                        <!-- Estadísticas -->
                         ${renderEstadisticas()}
-
-                        <!-- Lista de turnos -->
                         ${renderListaTurnosDECE()}
                     </div>
                 </div>
@@ -1577,15 +1334,15 @@
             return `
                 <div class="bg-white rounded-3xl shadow-2xl p-8 mb-6 slide-in-right">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                        <span class="text-4xl">⚙️</span> Control de Disponibilidad
+                        <span class="text-4xl">⚙️</span> Control
                     </h2>
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="${state.estadoDECE.disponible ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-red-400 to-red-500'} p-10 rounded-2xl text-center text-white shadow-xl card-hover">
-                            <div class="text-6xl mb-4 ">${state.estadoDECE.disponible ? '✅' : '❌'}</div>
+                            <div class="text-6xl mb-4">${state.estadoDECE.disponible ? '✅' : '❌'}</div>
                             <div class="text-3xl font-black mb-4">
                                 ${state.estadoDECE.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE'}
                             </div>
-                            <p class="text-lg mb-6 opacity-90">${state.estadoDECE.disponible ? 'El sistema está aceptando nuevos turnos' : 'El sistema está pausado temporalmente'}</p>
+                            <p class="text-lg mb-6 opacity-90">${state.estadoDECE.disponible ? 'El sistema está aceptando turnos' : 'El sistema está pausado'}</p>
                             <button id="btnDisponibilidad" onclick="cambiarDisponibilidad()" class="${state.estadoDECE.disponible ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg btn-modern">
                                 <span>${state.estadoDECE.disponible ? '⏸️ Pausar Sistema' : '▶️ Activar Sistema'}</span>
                             </button>
@@ -1617,31 +1374,31 @@
             return `
                 <div class="bg-white rounded-3xl shadow-2xl p-8 mb-6 scale-in">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                        <span class="text-4xl">📊</span> Estadísticas del Día
+                        <span class="text-4xl">📊</span> Estadísticas
                     </h2>
                     <div id="estadisticas">
                         <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                            <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl text-center border-2 border-gray-300 card-hover smooth-update">
+                            <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl text-center border-2 border-gray-300 card-hover">
                                 <div class="text-4xl font-black text-gray-700 mb-2">${state.estadisticas.totalHoy}</div>
                                 <div class="text-sm text-gray-600 font-semibold">📋 Total hoy</div>
                             </div>
-                            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl text-center border-2 border-yellow-300 card-hover smooth-update">
+                            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl text-center border-2 border-yellow-300 card-hover">
                                 <div class="text-4xl font-black text-yellow-700 mb-2">${state.turnos.filter(t => t.estado === 'pendiente' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                                 <div class="text-sm text-yellow-600 font-semibold">⏳ Pendientes</div>
                             </div>
-                            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center border-2 border-green-300 card-hover smooth-update">
+                            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center border-2 border-green-300 card-hover">
                                 <div class="text-4xl font-black text-green-700 mb-2">${state.turnos.filter(t => t.estado === 'aceptado' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                                 <div class="text-sm text-green-600 font-semibold">✅ En espera</div>
                             </div>
-                            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center border-2 border-orange-300 card-hover smooth-update">
+                            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center border-2 border-orange-300 card-hover">
                                 <div class="text-4xl font-black text-orange-700 mb-2">${state.estadisticas.enProceso}</div>
                                 <div class="text-sm text-orange-600 font-semibold">🔄 En proceso</div>
                             </div>
-                            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl text-center border-2 border-blue-300 card-hover smooth-update">
+                            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl text-center border-2 border-blue-300 card-hover">
                                 <div class="text-4xl font-black text-blue-700 mb-2">${state.turnos.filter(t => t.estado === 'atendido' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                                 <div class="text-sm text-blue-600 font-semibold">✔️ Completados</div>
                             </div>
-                            <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl text-center border-2 border-red-300 card-hover smooth-update">
+                            <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl text-center border-2 border-red-300 card-hover">
                                 <div class="text-4xl font-black text-red-700 mb-2">${state.estadisticas.no_asistio}</div>
                                 <div class="text-sm text-red-600 font-semibold">🚫 No asistió</div>
                             </div>
@@ -1658,34 +1415,17 @@
                 <div class="bg-white rounded-3xl shadow-2xl p-8 scale-in">
                     <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
                         <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                            <span class="text-4xl">📋</span> Lista de Turnos
+                            <span class="text-4xl">📋</span> Turnos
                         </h2>
-                        <div class="flex gap-2 flex-wrap items-center">
-                            <!-- Buscador -->
-                            <input 
-                                type="text" 
-                                id="busquedaTurnos" 
-                                placeholder="🔍 Buscar por nombre, cédula..." 
-                                class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none"
-                                style="focus:border-color: #3b82f6;"
-                                oninput="buscarTurnos(this.value)"
-                            >
-                            
-                            <!-- Filtros -->
-                            <button onclick="filtrarTurnos('todos')" class="${state.filtroTurnos === 'todos' ? 'gradient-bg text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm transition-all">
-                                📋 Todos (${state.turnos.length})
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="filtrarTurnos('todos')" class="${state.filtroTurnos === 'todos' ? 'gradient-bg text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm">
+                                Todos (${state.turnos.length})
                             </button>
-                            <button onclick="filtrarTurnos('pendiente')" class="${state.filtroTurnos === 'pendiente' ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm transition-all">
+                            <button onclick="filtrarTurnos('pendiente')" class="${state.filtroTurnos === 'pendiente' ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm">
                                 ⏳ Pendientes (${state.estadisticas.pendientes})
                             </button>
-                            <button onclick="filtrarTurnos('aceptado')" class="${state.filtroTurnos === 'aceptado' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm transition-all">
+                            <button onclick="filtrarTurnos('aceptado')" class="${state.filtroTurnos === 'aceptado' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm">
                                 ✅ Aceptados (${state.estadisticas.aceptados})
-                            </button>
-                            <button onclick="filtrarTurnos('en_proceso')" class="${state.filtroTurnos === 'en_proceso' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm transition-all">
-                                🔄 En Proceso (${state.estadisticas.enProceso})
-                            </button>
-                            <button onclick="filtrarTurnos('atendido')" class="${state.filtroTurnos === 'atendido' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-lg font-bold text-sm transition-all">
-                                ✔️ Atendidos (${state.estadisticas.atendidos})
                             </button>
                         </div>
                     </div>
@@ -1705,14 +1445,13 @@
             return `
                 <div class="text-center py-16 text-gray-500">
                     <div class="text-7xl mb-6 opacity-50">📋</div>
-                    <div class="text-2xl font-bold mb-2">No hay turnos ${state.filtroTurnos === 'todos' ? 'registrados' : 'en esta categoría'}</div>
-                    <p class="text-lg">${state.busqueda ? 'No se encontraron resultados para tu búsqueda' : 'Los turnos aparecerán aquí cuando los estudiantes los soliciten'}</p>
+                    <div class="text-2xl font-bold mb-2">No hay turnos</div>
+                    <p class="text-lg">Los turnos aparecerán aquí cuando se soliciten</p>
                 </div>
             `;
         }
 
         function renderTurnoCard(turno) {
-            // Verificar si está en proceso
             let estaEnProceso = false;
             if (turno.estado === 'aceptado' && turno.hora_atencion_programada) {
                 const horaInicio = HoraUtils.extraerHoraInicio(turno.hora_atencion_programada);
@@ -1756,7 +1495,7 @@
             const c = colores[turno.estado] || colores.pendiente;
 
             return `
-                <div class="bg-gradient-to-r ${c.bg} border-l-4 ${c.border} p-6 rounded-2xl shadow-lg turno-card smooth-update">
+                <div class="bg-gradient-to-r ${c.bg} border-l-4 ${c.border} p-6 rounded-2xl shadow-lg card-hover">
                     <div class="flex justify-between items-start flex-wrap gap-4 mb-4">
                         <div class="flex items-center gap-4">
                             <div class="gradient-bg text-white w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg">
@@ -1793,22 +1532,22 @@
                     
                     ${turno.situacion ? `
                         <div class="bg-white p-4 rounded-lg mb-4">
-                            <span class="font-bold text-gray-700 block mb-2">💬 Situación descrita:</span>
-                            <p class="text-gray-600 text-sm leading-relaxed">${turno.situacion}</p>
+                            <span class="font-bold text-gray-700 block mb-2">💬 Situación:</span>
+                            <p class="text-gray-600 text-sm">${turno.situacion}</p>
                         </div>
                     ` : ''}
                     
                     ${turno.motivo_rechazo ? `
                         <div class="bg-white p-4 rounded-lg mb-4 border-l-4 border-red-500">
                             <span class="font-bold text-red-700 block mb-2">📝 Motivo de rechazo:</span>
-                            <p class="text-red-600 text-sm leading-relaxed">${turno.motivo_rechazo}</p>
+                            <p class="text-red-600 text-sm">${turno.motivo_rechazo}</p>
                         </div>
                     ` : ''}
                     
                     ${turno.nota_dece ? `
                         <div class="p-4 rounded-lg mb-4 border-l-4" style="background: #dbeafe; border-color: #3b82f6;">
-                            <span class="font-bold block mb-2" style="color: #1e40af;">📌 Nota interna DECE:</span>
-                            <p class="text-sm leading-relaxed" style="color: #1e40af;">${turno.nota_dece}</p>
+                            <span class="font-bold block mb-2" style="color: #1e40af;">📌 Nota DECE:</span>
+                            <p class="text-sm" style="color: #1e40af;">${turno.nota_dece}</p>
                         </div>
                     ` : ''}
                     
@@ -1858,9 +1597,7 @@
             return botones;
         }
 
-        // ===============================================
         // EVENT HANDLERS Y FUNCIONES GLOBALES
-        // ===============================================
         function attachLoginEvents() {
             const btnEstudiante = document.getElementById('btnEstudiante');
             const btnDECE = document.getElementById('btnDECE');
@@ -1928,7 +1665,7 @@
                 const password = formData.get('password');
                 
                 if (!loginDECE(email, password)) {
-                    showNotification('Credenciales DECE incorrectas', 'error');
+                    showNotification('Credenciales incorrectas', 'error');
                 }
             });
 
@@ -1954,47 +1691,34 @@
             }
         }
 
-        function attachDECEEvents() {
-            // Los eventos se manejan con onclick en los botones
-        }
-
         // Funciones globales
         window.cerrarSesion = cerrarSesion;
         window.cambiarDisponibilidad = cambiarDisponibilidad;
-        window.eliminarTurno = eliminarTurno;
         window.agregarNotaDECE = agregarNotaDECE;
         
         window.refrescarManual = async () => {
             await cargarDatos();
-            showNotification('Datos actualizados', 'info');
+            showNotification('Actualizado', 'info');
         };
         
         window.aceptarTurnoConHora = async (id) => {
-            const hora = prompt('🕐 Ingrese la HORA DE INICIO de la cita:\n\nEjemplo: 10:00 o 14:30\n\n(Se generará automáticamente un rango de 40 minutos)');
-            
-            if (hora) {
-                // Validar formato HH:MM
-                if (!/^\d{1,2}:\d{2}$/.test(hora)) {
-                    showNotification('⚠️ Formato inválido. Use HH:MM (ejemplo: 10:00)', 'error');
-                    return;
-                }
-                
-                // Generar rango automático de 40 minutos
+            const hora = prompt('🕐 Hora de inicio (ej: 10:00):');
+            if (hora && /^\d{1,2}:\d{2}$/.test(hora)) {
                 const rangoCompleto = HoraUtils.generarRango(hora);
-                console.log('✅ Rango generado:', rangoCompleto);
-                
                 await actualizarEstadoTurno(id, 'aceptado', null, rangoCompleto);
+            } else if (hora) {
+                showNotification('Formato inválido', 'error');
             }
         };
         
         window.editarHora = async (id, horaActual) => {
-            const hora = prompt('🕐 Modificar hora de atención:', horaActual);
+            const hora = prompt('Modificar hora:', horaActual);
             if (hora && hora !== horaActual) {
                 try {
                     const { error } = await supabase.from('turnos').update({ hora_atencion_programada: hora }).eq('id', id);
                     if (error) throw error;
                     await cargarDatos();
-                    showNotification('Hora actualizada correctamente', 'success');
+                    showNotification('Hora actualizada', 'success');
                 } catch (error) {
                     showNotification('Error: ' + error.message, 'error');
                 }
@@ -2002,21 +1726,20 @@
         };
         
         window.rechazarTurno = (id) => {
-            const motivo = prompt('🚫 Motivo por el cual NO está disponible:\n\n(Ejemplo: Agenda llena, Derivar a otro servicio, Horario no disponible)');
+            const motivo = prompt('Motivo del rechazo:');
             if (motivo) {
                 actualizarEstadoTurno(id, 'rechazado', motivo);
             }
         };
         
         window.marcarAtendido = (id) => {
-            if (confirm('¿Confirmar que este turno ha sido atendido?')) {
+            if (confirm('¿Confirmar atendido?')) {
                 actualizarEstadoTurno(id, 'atendido');
             }
         };
         
-        // ✅ FUNCIÓN: Marcar como "No asistió"
         window.marcarNoAsistio = (id) => {
-            if (confirm('¿Confirmar que el estudiante NO se presentó a la cita?')) {
+            if (confirm('¿Confirmar no asistió?')) {
                 actualizarEstadoTurno(id, 'no_asistio');
             }
         };
@@ -2036,7 +1759,7 @@
                     render();
                 } else {
                     localStorage.removeItem('miTurnoId');
-                    showNotification('Tu turno ya no está disponible', 'warning');
+                    showNotification('Turno no disponible', 'warning');
                     render();
                 }
             }
@@ -2052,82 +1775,10 @@
             state.filtroTurnos = filtro;
             actualizarListaTurnosUI();
         };
-        
-        window.buscarTurnos = (busqueda) => {
-            state.busqueda = busqueda;
-            actualizarListaTurnosUI();
-        };
-        
-        window.toggleHistorial = () => {
-            const container = document.getElementById('historialContainer');
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                container.innerHTML = renderHistorial();
-            } else {
-                container.classList.add('hidden');
-            }
-        };
-        
-        function renderHistorial() {
-            return `
-                <div class="bg-white rounded-3xl shadow-2xl p-8 mb-6 slide-down">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">📜 Historial de Turnos</h2>
-                    <div class="space-y-3">
-                        ${state.historialEstudiante.slice(0, 10).map(turno => `
-                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 ${
-                                turno.estado === 'atendido' ? 'border-blue-500' :
-                                turno.estado === 'aceptado' ? 'border-green-500' :
-                                turno.estado === 'rechazado' ? 'border-red-500' : 'border-yellow-500'
-                            }">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <div class="font-bold">#${turno.numero_turno} - ${turno.motivo}</div>
-                                        <div class="text-sm text-gray-600">${new Date(turno.created_at).toLocaleDateString('es-ES')}</div>
-                                    </div>
-                                    <span class="text-xs font-bold px-3 py-1 rounded-full ${
-                                        turno.estado === 'atendido' ? 'bg-blue-200 text-blue-800' :
-                                        turno.estado === 'aceptado' ? 'bg-green-200 text-green-800' :
-                                        turno.estado === 'rechazado' ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800'
-                                    }">
-                                        ${turno.estado.toUpperCase()}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
 
-        // ===============================================
         // RENDERIZADO PRINCIPAL
-        // ===============================================
         function render() {
             const app = document.getElementById('app');
-            
-            if (!state.configurado && state.vista === 'login') {
-                app.innerHTML = `
-                    <div class="p-6">
-                        <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-10">
-                            <div class="text-center mb-8">
-                                <div class="text-8xl mb-6">🔧</div>
-                                <h1 class="text-4xl font-bold text-gray-800 mb-3">Configuración Requerida</h1>
-                                <p class="text-gray-600 text-lg">Sistema de Gestión de Turnos DECE</p>
-                            </div>
-                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-8 rounded-xl">
-                                <div class="flex items-start gap-4">
-                                    <div class="text-5xl">⚠️</div>
-                                    <div>
-                                        <h3 class="font-bold text-yellow-800 mb-3 text-xl">Base de datos no configurada</h3>
-                                        <p class="text-yellow-700 text-lg">Configure las credenciales de Supabase en el código</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
             
             if (state.vista === 'login') {
                 app.innerHTML = renderLogin();
@@ -2137,13 +1788,10 @@
                 attachEstudianteEvents();
             } else if (state.vista === 'dece') {
                 app.innerHTML = renderDECE();
-                attachDECEEvents();
             }
         }
 
-        // ===============================================
         // VERIFICAR SESIÓN E INICIALIZACIÓN
-        // ===============================================
         function verificarSesion() {
             const sesion = localStorage.getItem('sesion');
             if (sesion) {
@@ -2156,7 +1804,7 @@
             }
         }
 
-        // Auto-refresh SIN PARPADEO cada 5 segundos
+        // Auto-refresh OPTIMIZADO - Cambiado de 5 a 10 segundos
         let refreshInterval;
         
         function iniciarAutoRefresh() {
@@ -2166,7 +1814,7 @@
                 if (state.configurado && (state.vista === 'estudiante' || state.vista === 'dece')) {
                     await cargarDatos();
                 }
-            }, 5000);
+            }, 10000); // ⬅️ CAMBIO: De 5000 a 10000 (10 segundos)
         }
 
         // Inicialización
