@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Turnos DECE - UEPDC</title>
-    <!-- Favicon con el logo de UEPDC -->
     <link rel="icon" type="image/png" href="https://i.ibb.co/wNhQpyX0/image-30.png">
     <link rel="shortcut icon" type="image/png" href="https://i.ibb.co/wNhQpyX0/image-30.png">
     <link rel="apple-touch-icon" href="https://i.ibb.co/wNhQpyX0/image-30.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- EmailJS para envío de correos -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
@@ -18,7 +16,6 @@
             font-family: 'Poppins', sans-serif;
         }
         
-        /* Animaciones suaves */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -694,17 +691,28 @@
         }
 
         // AUTENTICACIÓN
-        function loginEstudiante(email, password) {
-            const usuarios = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
-            const usuario = usuarios.find(u => u.email === email && u.password === password);
-            
-            if (usuario) {
-                state.usuarioActual = usuario;
-                state.tipoUsuario = 'estudiante';
-                state.vista = 'estudiante';
-                localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario }));
+        async function loginEstudiante(email, password) {
+            try {
+                // Intentar buscar en Supabase primero
+                const { data: usuarios, error } = await supabase
+                    .from('usuarios_estudiantes')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', password);
                 
-                cargarDatos().then(() => {
+                if (error) {
+                    console.warn('⚠️ Error Supabase, usando localStorage:', error);
+                    // Fallback a localStorage
+                    const usuariosLocal = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
+                    const usuario = usuariosLocal.find(u => u.email === email && u.password === password);
+                    if (!usuario) return false;
+                    
+                    state.usuarioActual = usuario;
+                    state.tipoUsuario = 'estudiante';
+                    state.vista = 'estudiante';
+                    localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario }));
+                    
+                    await cargarDatos();
                     const miTurnoId = localStorage.getItem('miTurnoId');
                     if (miTurnoId) {
                         const turno = state.turnos.find(t => t.id === parseInt(miTurnoId));
@@ -713,42 +721,96 @@
                     }
                     
                     state.historialEstudiante = state.turnos.filter(t => t.email_estudiante === email);
-                    
                     render();
                     showNotification(`¡Bienvenido/a ${usuario.nombre}!`, 'success');
-                });
-                return true;
+                    return true;
+                }
+                
+                if (usuarios && usuarios.length > 0) {
+                    const usuario = usuarios[0];
+                    state.usuarioActual = usuario;
+                    state.tipoUsuario = 'estudiante';
+                    state.vista = 'estudiante';
+                    localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario }));
+                    
+                    await cargarDatos();
+                    const miTurnoId = localStorage.getItem('miTurnoId');
+                    if (miTurnoId) {
+                        const turno = state.turnos.find(t => t.id === parseInt(miTurnoId));
+                        if (turno) state.miTurno = turno;
+                        else localStorage.removeItem('miTurnoId');
+                    }
+                    
+                    state.historialEstudiante = state.turnos.filter(t => t.email_estudiante === email);
+                    render();
+                    showNotification(`¡Bienvenido/a ${usuario.nombre}!`, 'success');
+                    return true;
+                }
+                
+                return false;
+            } catch (err) {
+                console.error('❌ Error en loginEstudiante:', err);
+                return false;
             }
-            return false;
         }
 
-        function registrarEstudiante(nombre, email, cedula, curso, password) {
-            const usuarios = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
-            
-            if (usuarios.find(u => u.email === email)) {
-                showNotification('El correo ya está registrado', 'error');
-                return false;
-            }
-            
-            if (usuarios.find(u => u.cedula === cedula)) {
-                showNotification('La cédula ya está registrada', 'error');
-                return false;
-            }
-            
-            const nuevoUsuario = { nombre, email, cedula, curso, password };
-            usuarios.push(nuevoUsuario);
-            localStorage.setItem('usuarios_estudiantes', JSON.stringify(usuarios));
-            
-            state.usuarioActual = nuevoUsuario;
-            state.tipoUsuario = 'estudiante';
-            state.vista = 'estudiante';
-            localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario: nuevoUsuario }));
-            
-            cargarDatos().then(() => {
+        async function registrarEstudiante(nombre, email, cedula, curso, password) {
+            try {
+                // Verificar email en Supabase
+                const { data: emailExiste } = await supabase
+                    .from('usuarios_estudiantes')
+                    .select('email')
+                    .eq('email', email);
+                
+                if (emailExiste && emailExiste.length > 0) {
+                    showNotification('El correo ya está registrado', 'error');
+                    return false;
+                }
+                
+                // Verificar cédula en Supabase
+                const { data: cedulaExiste } = await supabase
+                    .from('usuarios_estudiantes')
+                    .select('cedula')
+                    .eq('cedula', cedula);
+                
+                if (cedulaExiste && cedulaExiste.length > 0) {
+                    showNotification('La cédula ya está registrada', 'error');
+                    return false;
+                }
+                
+                // Insertar en Supabase
+                const nuevoUsuario = { nombre, email, cedula, curso, password };
+                const { data, error } = await supabase
+                    .from('usuarios_estudiantes')
+                    .insert([nuevoUsuario])
+                    .select();
+                
+                if (error) {
+                    console.error('⚠️ Error Supabase, guardando en localStorage:', error);
+                    // Fallback a localStorage
+                    const usuarios = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
+                    usuarios.push(nuevoUsuario);
+                    localStorage.setItem('usuarios_estudiantes', JSON.stringify(usuarios));
+                    showNotification('⚠️ Registrado localmente', 'warning');
+                } else {
+                    console.log('✅ Usuario registrado en Supabase:', data);
+                    showNotification(`¡Registro exitoso! Bienvenido/a ${nombre}`, 'success');
+                }
+                
+                // Iniciar sesión
+                state.usuarioActual = nuevoUsuario;
+                state.tipoUsuario = 'estudiante';
+                state.vista = 'estudiante';
+                localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario: nuevoUsuario }));
+                
+                await cargarDatos();
                 render();
-                showNotification(`¡Registro exitoso! Bienvenido/a ${nombre}`, 'success');
-            });
-            return true;
+                return true;
+            } catch (err) {
+                console.error('❌ Error en registrarEstudiante:', err);
+                showNotification('Error: ' + err.message, 'error');
+                return false;
+            }
         }
 
         function loginDECE(email, password) {
@@ -1628,13 +1690,14 @@
                 btnRegistroEst.classList.remove('border-b-4', 'border-blue-800', 'text-blue-800');
                 formEstudiante.innerHTML = renderLoginEstudiante();
                 
-                document.getElementById('loginEstForm').addEventListener('submit', (e) => {
+                document.getElementById('loginEstForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.target);
                     const email = formData.get('email');
                     const password = formData.get('password');
                     
-                    if (!loginEstudiante(email, password)) {
+                    const resultado = await loginEstudiante(email, password);
+                    if (!resultado) {
                         showNotification('Credenciales incorrectas', 'error');
                     }
                 });
@@ -1645,10 +1708,10 @@
                 btnLoginEst.classList.remove('border-b-4', 'border-blue-800', 'text-blue-800');
                 formEstudiante.innerHTML = renderRegistroEstudiante();
                 
-                document.getElementById('registroEstForm').addEventListener('submit', (e) => {
+                document.getElementById('registroEstForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.target);
-                    registrarEstudiante(
+                    await registrarEstudiante(
                         formData.get('nombre'),
                         formData.get('email'),
                         formData.get('cedula'),
