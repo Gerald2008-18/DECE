@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Turnos DECE - UEPDC</title>
+    <!-- Favicon con el logo de UEPDC -->
+    <link rel="icon" type="image/png" href="https://i.ibb.co/wNhQpyX0/image-30.png">
+    <link rel="shortcut icon" type="image/png" href="https://i.ibb.co/wNhQpyX0/image-30.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/wNhQpyX0/image-30.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- EmailJS para envío de correos -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -910,7 +914,7 @@
                         
                         <div class="text-center mb-8">
                             <div class="flex justify-center mb-6">
-                                <img src="https://i.ibb.co/dwm03mTb/image-30.png" alt="UEPDC Logo" class="logo-institucional">
+                                <img src="https://i.ibb.co/wNhQpyX0/image-30.png" alt="UEPDC Logo" class="logo-institucional">
                             </div>
                             
                             <h1 class="text-4xl font-black mb-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
@@ -1804,7 +1808,7 @@
             }
         }
 
-        // Auto-refresh OPTIMIZADO - Cambiado de 5 a 10 segundos
+        // Auto-refresh OPTIMIZADO - 10 segundos
         let refreshInterval;
         
         function iniciarAutoRefresh() {
@@ -1814,7 +1818,7 @@
                 if (state.configurado && (state.vista === 'estudiante' || state.vista === 'dece')) {
                     await cargarDatos();
                 }
-            }, 10000); // ⬅️ CAMBIO: De 5000 a 10000 (10 segundos)
+            }, 10000);
         }
 
         // Inicialización
