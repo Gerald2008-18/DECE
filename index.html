@@ -693,15 +693,20 @@
         // AUTENTICACIÓN
         async function loginEstudiante(email, password) {
             try {
-                // Intentar buscar en Supabase primero
-                const { data: usuarios, error } = await supabase
-                    .from('usuarios_estudiantes')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password', password);
+                // Buscar en Supabase con filtro en URL
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(password)}&select=*`,
+                    {
+                        headers: { 
+                            'apikey': SUPABASE_KEY, 
+                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        }
+                    }
+                );
+                const usuarios = await response.json();
                 
-                if (error) {
-                    console.warn('⚠️ Error Supabase, usando localStorage:', error);
+                if (!response.ok || !usuarios || usuarios.length === 0) {
+                    console.warn('⚠️ No encontrado en Supabase, intentando localStorage');
                     // Fallback a localStorage
                     const usuariosLocal = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
                     const usuario = usuariosLocal.find(u => u.email === email && u.password === password);
@@ -757,23 +762,35 @@
         async function registrarEstudiante(nombre, email, cedula, curso, password) {
             try {
                 // Verificar email en Supabase
-                const { data: emailExiste } = await supabase
-                    .from('usuarios_estudiantes')
-                    .select('email')
-                    .eq('email', email);
+                const responseEmail = await fetch(
+                    `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&select=email`,
+                    {
+                        headers: { 
+                            'apikey': SUPABASE_KEY, 
+                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        }
+                    }
+                );
+                const emailData = await responseEmail.json();
                 
-                if (emailExiste && emailExiste.length > 0) {
+                if (emailData && emailData.length > 0) {
                     showNotification('El correo ya está registrado', 'error');
                     return false;
                 }
                 
                 // Verificar cédula en Supabase
-                const { data: cedulaExiste } = await supabase
-                    .from('usuarios_estudiantes')
-                    .select('cedula')
-                    .eq('cedula', cedula);
+                const responseCedula = await fetch(
+                    `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?cedula=eq.${encodeURIComponent(cedula)}&select=cedula`,
+                    {
+                        headers: { 
+                            'apikey': SUPABASE_KEY, 
+                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        }
+                    }
+                );
+                const cedulaData = await responseCedula.json();
                 
-                if (cedulaExiste && cedulaExiste.length > 0) {
+                if (cedulaData && cedulaData.length > 0) {
                     showNotification('La cédula ya está registrada', 'error');
                     return false;
                 }
@@ -782,16 +799,25 @@
                 const nuevoUsuario = { nombre, email, cedula, curso, password };
                 const { data, error } = await supabase
                     .from('usuarios_estudiantes')
-                    .insert([nuevoUsuario])
-                    .select();
+                    .insert([nuevoUsuario]);
                 
                 if (error) {
                     console.error('⚠️ Error Supabase, guardando en localStorage:', error);
                     // Fallback a localStorage
                     const usuarios = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
+                    
+                    if (usuarios.find(u => u.email === email)) {
+                        showNotification('El correo ya está registrado', 'error');
+                        return false;
+                    }
+                    if (usuarios.find(u => u.cedula === cedula)) {
+                        showNotification('La cédula ya está registrada', 'error');
+                        return false;
+                    }
+                    
                     usuarios.push(nuevoUsuario);
                     localStorage.setItem('usuarios_estudiantes', JSON.stringify(usuarios));
-                    showNotification('⚠️ Registrado localmente', 'warning');
+                    showNotification('⚠️ Registrado localmente (sin conexión a BD)', 'warning');
                 } else {
                     console.log('✅ Usuario registrado en Supabase:', data);
                     showNotification(`¡Registro exitoso! Bienvenido/a ${nombre}`, 'success');
