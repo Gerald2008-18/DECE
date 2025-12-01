@@ -610,7 +610,7 @@
             if (!elemento) return;
             
             elemento.innerHTML = `
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl text-center border-2 border-gray-300 card-hover">
                         <div class="text-4xl font-black text-gray-700 mb-2">${state.estadisticas.totalHoy}</div>
                         <div class="text-sm text-gray-600 font-semibold">📋 Total hoy</div>
@@ -618,10 +618,6 @@
                     <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl text-center border-2 border-yellow-300 card-hover">
                         <div class="text-4xl font-black text-yellow-700 mb-2">${state.turnos.filter(t => t.estado === 'pendiente' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                         <div class="text-sm text-yellow-600 font-semibold">⏳ Pendientes</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center border-2 border-green-300 card-hover">
-                        <div class="text-4xl font-black text-green-700 mb-2">${state.turnos.filter(t => t.estado === 'aceptado' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
-                        <div class="text-sm text-green-600 font-semibold">✅ En espera</div>
                     </div>
                     <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center border-2 border-orange-300 card-hover">
                         <div class="text-4xl font-black text-orange-700 mb-2">${state.estadisticas.enProceso}</div>
@@ -637,6 +633,34 @@
                     </div>
                 </div>
             `;
+            
+            // TAMBIÉN actualizar la sección de Control de arriba
+            actualizarControlUI();
+        }
+        
+        function actualizarControlUI() {
+            // Actualizar los números pequeños de las tarjetas de Control
+            const tarjetasPequenas = document.querySelector('.grid.grid-cols-2.gap-4');
+            if (tarjetasPequenas) {
+                tarjetasPequenas.innerHTML = `
+                    <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 p-6 rounded-2xl text-center text-white shadow-lg card-hover">
+                        <div class="text-5xl font-black mb-2">${state.estadisticas.pendientes}</div>
+                        <div class="text-sm font-semibold opacity-90">⏳ Pendientes</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-400 to-green-500 p-6 rounded-2xl text-center text-white shadow-lg card-hover">
+                        <div class="text-5xl font-black mb-2">${state.estadisticas.aceptados}</div>
+                        <div class="text-sm font-semibold opacity-90">✅ Aceptados</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-400 to-orange-500 p-6 rounded-2xl text-center text-white shadow-lg card-hover">
+                        <div class="text-5xl font-black mb-2">${state.estadisticas.enProceso}</div>
+                        <div class="text-sm font-semibold opacity-90">🔄 En proceso</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-400 to-blue-500 p-6 rounded-2xl text-center text-white shadow-lg card-hover">
+                        <div class="text-5xl font-black mb-2">${state.estadisticas.atendidos}</div>
+                        <div class="text-sm font-semibold opacity-90">✔️ Atendidos</div>
+                    </div>
+                `;
+            }
         }
         
         function actualizarListaTurnosUI() {
@@ -1469,7 +1493,7 @@
                         <span class="text-4xl">📊</span> Estadísticas
                     </h2>
                     <div id="estadisticas">
-                        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                             <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl text-center border-2 border-gray-300 card-hover">
                                 <div class="text-4xl font-black text-gray-700 mb-2">${state.estadisticas.totalHoy}</div>
                                 <div class="text-sm text-gray-600 font-semibold">📋 Total hoy</div>
@@ -1477,10 +1501,6 @@
                             <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl text-center border-2 border-yellow-300 card-hover">
                                 <div class="text-4xl font-black text-yellow-700 mb-2">${state.turnos.filter(t => t.estado === 'pendiente' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
                                 <div class="text-sm text-yellow-600 font-semibold">⏳ Pendientes</div>
-                            </div>
-                            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center border-2 border-green-300 card-hover">
-                                <div class="text-4xl font-black text-green-700 mb-2">${state.turnos.filter(t => t.estado === 'aceptado' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
-                                <div class="text-sm text-green-600 font-semibold">✅ En espera</div>
                             </div>
                             <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center border-2 border-orange-300 card-hover">
                                 <div class="text-4xl font-black text-orange-700 mb-2">${state.estadisticas.enProceso}</div>
