@@ -128,6 +128,14 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 5px;
         }
+        
+        .select-modern {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em;
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen relative overflow-x-hidden">
@@ -783,8 +791,30 @@
             }
         }
 
-        async function registrarEstudiante(nombre, email, cedula, curso, password) {
+        async function registrarEstudiante(datosFormulario) {
             try {
+                const { nombre, email, cedula, nivel, grado, especialidad, paralelo, password } = datosFormulario;
+                
+                // Validar email institucional
+                if (!email.endsWith('@est.uepdc.edu.ec')) {
+                    showNotification('❌ Debes usar tu correo institucional (@est.uepdc.edu.ec)', 'error');
+                    return false;
+                }
+                
+                // Validar nombre completo (al menos dos palabras)
+                const palabrasNombre = nombre.trim().split(/\s+/);
+                if (palabrasNombre.length < 2) {
+                    showNotification('❌ Ingresa tu nombre completo (nombre y apellido)', 'error');
+                    return false;
+                }
+                
+                // Construir curso completo
+                let cursoCompleto = `${grado}`;
+                if (especialidad && especialidad !== 'N/A') {
+                    cursoCompleto += ` ${especialidad}`;
+                }
+                cursoCompleto += ` ${paralelo}`;
+                
                 // Verificar email en Supabase
                 const responseEmail = await fetch(
                     `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&select=email`,
@@ -820,7 +850,7 @@
                 }
                 
                 // Insertar en Supabase
-                const nuevoUsuario = { nombre, email, cedula, curso, password };
+                const nuevoUsuario = { nombre, email, cedula, curso: cursoCompleto, password };
                 const { data, error } = await supabase
                     .from('usuarios_estudiantes')
                     .insert([nuevoUsuario]);
@@ -1075,11 +1105,11 @@
             return `
                 <form id="loginEstForm" class="space-y-5 fade-in">
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo</label>
-                        <input type="email" name="email" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="tu@correo.com">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo Institucional *</label>
+                        <input type="email" name="email" required pattern=".+@est\.uepdc\.edu\.ec$" class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="nombre@est.uepdc.edu.ec">
                     </div>
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🔒 Contraseña</label>
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🔒 Contraseña *</label>
                         <input type="password" name="password" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="••••••••">
                     </div>
                     <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
@@ -1091,28 +1121,72 @@
 
         function renderRegistroEstudiante() {
             return `
-                <form id="registroEstForm" class="space-y-4 fade-in">
+                <form id="registroEstForm" class="space-y-4 fade-in max-h-[70vh] overflow-y-auto pr-2">
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">👤 Nombre</label>
-                        <input type="text" name="nombre" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Nombre completo">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">👤 Nombre Completo *</label>
+                        <input type="text" name="nombre" required minlength="5" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Ej: Juan Andrés Pérez Gómez">
                     </div>
+                    
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo</label>
-                        <input type="email" name="email" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="tu@correo.com">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo Institucional *</label>
+                        <input type="email" name="email" required pattern=".+@est\.uepdc\.edu\.ec$" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="nombre@est.uepdc.edu.ec">
                     </div>
+                    
                     <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🆔 Cédula</label>
-                        <input type="text" name="cedula" required pattern="[0-9]{10}" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="0123456789">
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🆔 Cédula *</label>
+                        <input type="text" name="cedula" required pattern="[0-9]{10}" maxlength="10" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="0123456789">
                     </div>
-                    <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📚 Curso</label>
-                        <input type="text" name="curso" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="3ro BGU A">
+                    
+                    <div class="border-t-2 border-gray-200 pt-4">
+                        <h3 class="font-black text-lg mb-3" style="color: #1e3a8a;">📚 Información Académica</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🎓 Nivel Educativo *</label>
+                            <select name="nivel" id="nivelSelect" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
+                                <option value="">Selecciona tu nivel</option>
+                                <option value="Escuela">🎨 Escuela (1ro - 7mo EGB)</option>
+                                <option value="Básica Superior">📖 Básica Superior (8vo - 10mo EGB)</option>
+                                <option value="Bachillerato">🎓 Bachillerato (1ro - 3ro BGU)</option>
+                            </select>
+                        </div>
+                        
+                        <div id="gradoContainer" class="mb-4" style="display: none;">
+                            <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📝 Año/Grado *</label>
+                            <select name="grado" id="gradoSelect" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
+                                <option value="">Primero selecciona el nivel</option>
+                            </select>
+                        </div>
+                        
+                        <div id="especialidadContainer" class="mb-4" style="display: none;">
+                            <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">💼 Especialidad *</label>
+                            <select name="especialidad" id="especialidadSelect" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
+                                <option value="N/A">Selecciona especialidad</option>
+                                <option value="TICS Informática">💻 TICS Informática</option>
+                                <option value="TICS Contable">📊 TICS Contable</option>
+                                <option value="BGU Ciencias">🔬 BGU Ciencias</option>
+                            </select>
+                        </div>
+                        
+                        <div id="paraleloContainer" class="mb-4" style="display: none;">
+                            <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📋 Paralelo *</label>
+                            <select name="paralelo" id="paraleloSelect" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
+                                <option value="">Selecciona paralelo</option>
+                                <option value="A">Paralelo A</option>
+                                <option value="B">Paralelo B</option>
+                                <option value="C">Paralelo C</option>
+                                <option value="D">Paralelo D</option>
+                                <option value="E">Paralelo E</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🔒 Contraseña</label>
+                    
+                    <div class="border-t-2 border-gray-200 pt-4">
+                        <h3 class="font-black text-lg mb-3" style="color: #1e3a8a;">🔒 Seguridad</h3>
+                        <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">Contraseña *</label>
                         <input type="password" name="password" required minlength="6" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Mínimo 6 caracteres">
                     </div>
-                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+                    
+                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern sticky bottom-0" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
                         <span>✨ Crear Cuenta</span>
                     </button>
                 </form>
@@ -1228,7 +1302,7 @@
                             </div>
                             <div>
                                 <label class="block font-bold text-gray-700 mb-2">📋 Motivo *</label>
-                                <select name="motivo" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;">
+                                <select name="motivo" required class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none text-lg select-modern" style="border-color: #60a5fa;">
                                     <option value="">Seleccione un motivo</option>
                                     <option value="Apoyo Académico">📖 Apoyo Académico</option>
                                     <option value="Orientación Personal">💭 Orientación Personal</option>
@@ -1243,8 +1317,8 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block font-bold text-gray-700 mb-2">💬 Describe tu situación</label>
-                            <textarea name="situacion" rows="4" class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="Opcional..."></textarea>
+                            <label class="block font-bold text-gray-700 mb-2">💬 Describe tu situación *</label>
+                            <textarea name="situacion" rows="4" required class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #60a5fa;" placeholder="Por favor describe tu situación con detalle..."></textarea>
                         </div>
                         <button type="submit" ${!state.estadoDECE.disponible ? 'disabled' : ''} class="w-full gradient-bg text-white py-5 rounded-xl font-black text-xl hover:shadow-2xl transition-all disabled:bg-gray-400 disabled:cursor-not-allowed btn-modern">
                             <span>✨ Solicitar Turno</span>
@@ -1754,16 +1828,78 @@
                 btnLoginEst.classList.remove('border-b-4', 'border-blue-800', 'text-blue-800');
                 formEstudiante.innerHTML = renderRegistroEstudiante();
                 
+                // Agregar eventos dinámicos para el formulario de registro
+                const nivelSelect = document.getElementById('nivelSelect');
+                const gradoContainer = document.getElementById('gradoContainer');
+                const gradoSelect = document.getElementById('gradoSelect');
+                const especialidadContainer = document.getElementById('especialidadContainer');
+                const paraleloContainer = document.getElementById('paraleloContainer');
+                
+                nivelSelect.addEventListener('change', (e) => {
+                    const nivel = e.target.value;
+                    gradoContainer.style.display = nivel ? 'block' : 'none';
+                    especialidadContainer.style.display = 'none';
+                    paraleloContainer.style.display = 'none';
+                    
+                    if (nivel === 'Escuela') {
+                        gradoSelect.innerHTML = `
+                            <option value="">Selecciona el grado</option>
+                            <option value="1ro EGB">1ro EGB</option>
+                            <option value="2do EGB">2do EGB</option>
+                            <option value="3ro EGB">3ro EGB</option>
+                            <option value="4to EGB">4to EGB</option>
+                            <option value="5to EGB">5to EGB</option>
+                            <option value="6to EGB">6to EGB</option>
+                            <option value="7mo EGB">7mo EGB</option>
+                        `;
+                    } else if (nivel === 'Básica Superior') {
+                        gradoSelect.innerHTML = `
+                            <option value="">Selecciona el grado</option>
+                            <option value="8vo EGB">8vo EGB</option>
+                            <option value="9no EGB">9no EGB</option>
+                            <option value="10mo EGB">10mo EGB</option>
+                        `;
+                    } else if (nivel === 'Bachillerato') {
+                        gradoSelect.innerHTML = `
+                            <option value="">Selecciona el año</option>
+                            <option value="1ro BGU">1ro BGU</option>
+                            <option value="2do BGU">2do BGU</option>
+                            <option value="3ro BGU">3ro BGU</option>
+                        `;
+                    }
+                });
+                
+                gradoSelect.addEventListener('change', (e) => {
+                    const nivel = nivelSelect.value;
+                    if (e.target.value) {
+                        if (nivel === 'Bachillerato') {
+                            especialidadContainer.style.display = 'block';
+                        } else {
+                            especialidadContainer.style.display = 'none';
+                        }
+                        paraleloContainer.style.display = 'block';
+                    } else {
+                        especialidadContainer.style.display = 'none';
+                        paraleloContainer.style.display = 'none';
+                    }
+                });
+                
                 document.getElementById('registroEstForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.target);
-                    await registrarEstudiante(
-                        formData.get('nombre'),
-                        formData.get('email'),
-                        formData.get('cedula'),
-                        formData.get('curso'),
-                        formData.get('password')
-                    );
+                    
+                    const datos = {
+                        nombre: formData.get('nombre'),
+                        email: formData.get('email'),
+                        cedula: formData.get('cedula'),
+                        nivel: formData.get('nivel'),
+                        grado: formData.get('grado'),
+                        especialidad: formData.get('especialidad') || 'N/A',
+                        paralelo: formData.get('paralelo'),
+                        password: formData.get('password')
+                    };
+                    
+                    await registrarEstudiante(datos);
                 });
             });
 
