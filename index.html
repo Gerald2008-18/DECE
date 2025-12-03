@@ -210,10 +210,10 @@
         // FUNCIÓN DE ENVÍO DE EMAIL
         async function enviarEmailAceptacion(turno) {
             console.log('📧 INICIANDO ENVÍO DE EMAIL');
+            console.log('Datos del turno:', turno);
             
             if (!turno || typeof turno !== 'object') {
                 console.error('❌ Turno no válido');
-                showNotification('⚠️ Error: Datos de turno no válidos', 'warning');
                 return false;
             }
             
@@ -224,27 +224,30 @@
             }
             
             if (emailEstudiante === null || emailEstudiante === undefined) {
-                console.error('❌ Email es NULL');
-                showNotification('⚠️ Turno aceptado pero sin email', 'warning');
+                console.error('❌ Email es NULL o undefined');
                 return false;
             }
             
             const emailLimpio = String(emailEstudiante).trim();
             
             if (!emailLimpio || emailLimpio === 'null' || emailLimpio === 'undefined') {
-                console.error('❌ Email vacío');
-                showNotification('⚠️ Email está vacío', 'warning');
+                console.error('❌ Email vacío o inválido');
                 return false;
             }
             
             const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!regexEmail.test(emailLimpio)) {
-                console.error('❌ Email inválido:', emailLimpio);
-                showNotification('⚠️ Email inválido', 'warning');
+                console.error('❌ Email con formato inválido:', emailLimpio);
                 return false;
             }
             
             console.log('✅ Email validado:', emailLimpio);
+            
+            // Verificar EmailJS
+            if (typeof emailjs === 'undefined') {
+                console.warn('⚠️ EmailJS no está disponible - continuando sin enviar email');
+                return false;
+            }
             
             try {
                 const fechaSolicitud = turno.created_at 
@@ -264,37 +267,49 @@
                     : 'No disponible';
                 
                 const templateParams = {
-                    to_email: emailLimpio,
-                    student_name: turno.nombre || 'Estudiante',
-                    turno_numero: turno.numero_turno || turno.id || 'N/A',
-                    fecha_solicitud: fechaSolicitud,
-                    hora_solicitud: horaSolicitud,
-                    hora_atencion: turno.hora_atencion_programada || 'Por confirmar',
-                    motivo: turno.motivo || 'No especificado',
-                    curso: turno.curso || 'No especificado',
-                    cedula: turno.cedula || 'No especificada'
+                    to_email: String(emailLimpio),
+                    student_name: String(turno.nombre || 'Estudiante'),
+                    turno_numero: String(turno.numero_turno || turno.id || 'N/A'),
+                    fecha_solicitud: String(fechaSolicitud),
+                    hora_solicitud: String(horaSolicitud),
+                    hora_atencion: String(turno.hora_atencion_programada || 'Por confirmar'),
+                    motivo: String(turno.motivo || 'No especificado'),
+                    curso: String(turno.curso || 'No especificado'),
+                    cedula: String(turno.cedula || 'No especificada')
                 };
                 
-                if (typeof emailjs === 'undefined') {
-                    throw new Error('EmailJS no está disponible');
-                }
-                
-                console.log('🚀 Enviando email...');
+                console.log('📤 Parámetros del email:', templateParams);
+                console.log('🚀 Intentando enviar email a:', emailLimpio);
                 
                 const response = await emailjs.send(
                     EMAILJS_CONFIG.SERVICE_ID,
                     EMAILJS_CONFIG.TEMPLATE_ID,
-                    templateParams,
-                    EMAILJS_CONFIG.PUBLIC_KEY
+                    templateParams
                 );
                 
                 console.log('✅ EMAIL ENVIADO EXITOSAMENTE');
+                console.log('Respuesta de EmailJS:', response);
                 showNotification(`📧 Email enviado a ${emailLimpio}`, 'success');
                 return true;
                 
             } catch (error) {
                 console.error('❌ ERROR AL ENVIAR EMAIL:', error);
-                showNotification(`⚠️ No se envió email: ${error.message}`, 'warning');
+                console.error('Tipo de error:', typeof error);
+                console.error('Status:', error.status);
+                console.error('Text:', error.text);
+                
+                let mensajeError = 'Turno aceptado';
+                if (error.status === 412) {
+                    mensajeError += ' (verifica configuración EmailJS)';
+                } else if (error.status === 400) {
+                    mensajeError += ' (parámetros de email inválidos)';
+                } else if (error.text) {
+                    mensajeError += ` (${error.text})`;
+                } else {
+                    mensajeError += ' (email no enviado)';
+                }
+                
+                showNotification(`✅ ${mensajeError}`, 'success');
                 return false;
             }
         }
@@ -1008,16 +1023,7 @@
                 const { error } = await supabase.from('turnos').update(actualizado).eq('id', turnoId);
                 if (error) throw error;
                 
-                if (nuevoEstado === 'aceptado') {
-                    await cargarDatos();
-                    const turnoActualizado = state.turnos.find(t => t.id === turnoId);
-                    if (turnoActualizado) {
-                        await enviarEmailAceptacion(turnoActualizado);
-                    }
-                } else {
-                    await cargarDatos();
-                }
-                
+                // Primero mostrar que el turno fue actualizado
                 const mensajes = {
                     'aceptado': '✅ Turno aceptado correctamente',
                     'rechazado': '❌ Turno rechazado',
@@ -1026,6 +1032,20 @@
                 };
                 
                 showNotification(mensajes[nuevoEstado] || 'Turno actualizado', 'success');
+                
+                // Recargar datos
+                await cargarDatos();
+                
+                // Intentar enviar email DESPUÉS de actualizar (sin bloquear)
+                if (nuevoEstado === 'aceptado') {
+                    const turnoActualizado = state.turnos.find(t => t.id === turnoId);
+                    if (turnoActualizado) {
+                        // Enviar email en segundo plano sin esperar
+                        enviarEmailAceptacion(turnoActualizado).catch(err => {
+                            console.warn('Email no enviado pero turno aceptado:', err);
+                        });
+                    }
+                }
                 
             } catch (error) {
                 console.error('Error:', error);
