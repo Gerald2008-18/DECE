@@ -199,6 +199,11 @@
                 if (typeof emailjs !== 'undefined') {
                     emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
                     console.log('✅ EmailJS inicializado correctamente');
+                    console.log('📋 Config:', {
+                        publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
+                        serviceId: EMAILJS_CONFIG.SERVICE_ID,
+                        templateId: EMAILJS_CONFIG.TEMPLATE_ID
+                    });
                 } else {
                     console.error('❌ EmailJS no está cargado');
                 }
@@ -268,6 +273,8 @@
                 
                 const templateParams = {
                     to_email: String(emailLimpio),
+                    reply_to: String(emailLimpio),
+                    to_name: String(turno.nombre || 'Estudiante'),
                     student_name: String(turno.nombre || 'Estudiante'),
                     turno_numero: String(turno.numero_turno || turno.id || 'N/A'),
                     fecha_solicitud: String(fechaSolicitud),
