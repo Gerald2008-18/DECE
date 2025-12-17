@@ -1723,9 +1723,9 @@
             const coloresEstado = {
                 'pendiente': 'bg-yellow-100 border-yellow-300',
                 'aceptado': estaEnProceso ? 'bg-orange-100 border-orange-400' : 'bg-green-100 border-green-300',
-                'rechazado': 'bg-red-100 border-red-300',
-                'atendido': 'bg-blue-100 border-blue-300',
-                'no_asistio': 'bg-gray-100 border-gray-300'
+                'rechazado': 'bg-red-50 border-red-200',
+                'atendido': 'bg-blue-50 border-blue-200',
+                'no_asistio': 'bg-purple-50 border-purple-200'
             };
             
             const iconosEstado = {
@@ -1765,52 +1765,45 @@
                                 <button onclick="editarHora(${turno.id}, '${turno.hora_atencion_programada}')" class="text-blue-500 hover:text-blue-700 ml-2">✏️</button>
                             </div>
                         ` : ''}
-                        ${estaEnProceso ? `
-                            <div class="col-span-2 bg-orange-200 p-2 rounded text-center font-bold">🔄 EN PROCESO AHORA</div>
+                        ${turno.motivo_rechazo ? `
+                            <div class="col-span-2 text-red-600"><span class="font-semibold">❌ Rechazo:</span> ${turno.motivo_rechazo}</div>
+                        ` : ''}
+                        ${turno.nota_dece ? `
+                            <div class="col-span-2 text-purple-600"><span class="font-semibold">📝 Nota DECE:</span> ${turno.nota_dece}</div>
                         ` : ''}
                     </div>
                     
                     ${turno.situacion ? `
-                        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                            <p class="font-semibold text-gray-700 mb-1">💬 Situación:</p>
-                            <p class="text-gray-600 text-sm">${turno.situacion}</p>
+                        <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                            <span class="font-semibold text-gray-700">💬 Situación:</span>
+                            <p class="text-gray-600 mt-1">${turno.situacion}</p>
                         </div>
                     ` : ''}
                     
-                    ${turno.nota_dece ? `
-                        <div class="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                            <p class="font-semibold text-blue-700 mb-1">📝 Nota DECE:</p>
-                            <p class="text-blue-600 text-sm">${turno.nota_dece}</p>
+                    ${estaEnProceso ? `
+                        <div class="badge-en-proceso text-white px-4 py-2 rounded-lg text-center mb-4 font-bold">
+                            🔄 CITA EN PROCESO
                         </div>
                     ` : ''}
                     
-                    ${turno.motivo_rechazo ? `
-                        <div class="mb-4 p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
-                            <p class="font-semibold text-red-700 mb-1">❌ Motivo de rechazo:</p>
-                            <p class="text-red-600 text-sm">${turno.motivo_rechazo}</p>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="flex gap-2 flex-wrap">
+                    <div class="flex flex-wrap gap-2">
                         ${turno.estado === 'pendiente' ? `
-                            <button onclick="aceptarTurnoConHora(${turno.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition-all">
+                            <button onclick="aceptarTurnoConHora(${turno.id})" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold">
                                 ✅ Aceptar
                             </button>
-                            <button onclick="rechazarTurno(${turno.id})" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-600 transition-all">
+                            <button onclick="rechazarTurno(${turno.id})" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold">
                                 ❌ Rechazar
                             </button>
                         ` : ''}
-                        
                         ${turno.estado === 'aceptado' ? `
-                            <button onclick="marcarAtendido(${turno.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition-all">
-                                ✔️ Marcar Atendido
+                            <button onclick="marcarAtendido(${turno.id})" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all font-semibold">
+                                ✔️ Atendido
                             </button>
-                            <button onclick="marcarNoAsistio(${turno.id})" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition-all">
-                                🚫 No Asistió
+                            <button onclick="marcarNoAsistio(${turno.id})" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all font-semibold">
+                                🚫 No asistió
                             </button>
                         ` : ''}
-                        
-                        <button onclick="agregarNotaDECE(${turno.id})" class="bg-purple-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-600 transition-all">
+                        <button onclick="agregarNotaDECE(${turno.id})" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-all font-semibold">
                             📝 Nota
                         </button>
                     </div>
@@ -1929,64 +1922,119 @@
 
         function renderDECE() {
             return `
-                <div class="min-h-screen p-6">
+                <div class="p-4 fade-in">
                     <div class="max-w-7xl mx-auto">
-                        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h1 class="text-3xl font-black" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                                        Panel de Control DECE
-                                    </h1>
-                                    <p class="text-gray-600 text-lg mt-1">Departamento de Consejería Estudiantil</p>
-                                </div>
-                                <div class="flex gap-3">
-                                    <button onclick="refrescarManual()" class="bg-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-all btn-modern">
-                                        <span>🔄 Refrescar</span>
-                                    </button>
-                                    <button onclick="cerrarSesion()" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-600 transition-all btn-modern">
-                                        <span>🚪 Cerrar Sesión</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-2xl shadow-xl p-6 mb-6 control-disponible-card">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-white rounded-3xl shadow-2xl p-6 mb-6 slide-in-left">
+                            <div class="flex justify-between items-center flex-wrap gap-4">
                                 <div class="flex items-center gap-4">
-                                    <div class="control-disponible-icon">${state.estadoDECE.disponible ? '🟢' : '🔴'}</div>
+                                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+                                        🎓
+                                    </div>
                                     <div>
-                                        <h2 class="control-disponible-title font-black text-gray-800">
-                                            ${state.estadoDECE.disponible ? 'Sistema Activo' : 'Sistema Pausado'}
-                                        </h2>
-                                        <p class="control-disponible-text text-gray-600">
-                                            ${state.estadoDECE.disponible ? 'Aceptando solicitudes de turnos' : 'No se están aceptando nuevos turnos'}
-                                        </p>
+                                        <h1 class="text-3xl font-bold" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                                            Panel DECE
+                                        </h1>
+                                        <p class="text-gray-600 text-lg">Departamento de Consejería Estudiantil</p>
                                     </div>
                                 </div>
-                                <button onclick="cambiarDisponibilidad()" class="control-disponible-btn ${state.estadoDECE.disponible ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-xl font-bold transition-all btn-modern">
-                                    <span>${state.estadoDECE.disponible ? '⏸️ Pausar Sistema' : '▶️ Activar Sistema'}</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div id="estadisticasContainer" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
-                            ${renderEstadisticasHTML()}
-                        </div>
-                        
-                        <div class="bg-white rounded-2xl shadow-xl p-8">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-black text-gray-800">📋 Gestión de Turnos</h2>
-                                <div class="flex gap-2">
-                                    <button onclick="filtrarTurnos('todos')" class="px-4 py-2 rounded-lg font-bold ${state.filtroTurnos === 'todos' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} transition-all">
-                                        Todos
+                                <div class="flex gap-3">
+                                    <button onclick="refrescarManual()" class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:bg-blue-600 transition-all btn-modern font-bold">
+                                        <span>🔄 Actualizar</span>
                                     </button>
-                                    <button onclick="filtrarTurnos('pendiente')" class="px-4 py-2 rounded-lg font-bold ${state.filtroTurnos === 'pendiente' ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'} transition-all">
-                                        Pendientes
-                                    </button>
-                                    <button onclick="filtrarTurnos('aceptado')" class="px-4 py-2 rounded-lg font-bold ${state.filtroTurnos === 'aceptado' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'} transition-all">
-                                        Aceptados
+                                    <button onclick="cerrarSesion()" class="bg-red-500 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:bg-red-600 transition-all btn-modern font-bold">
+                                        <span>🚪 Salir</span>
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="grid lg:grid-cols-3 gap-6 mb-6">
+                            <div class="lg:col-span-1">
+                                <div class="${state.estadoDECE.disponible ? 'bg-gradient-to-br from-green-400 to-green-500' : 'bg-gradient-to-br from-red-400 to-red-500'} control-disponible-card rounded-2xl text-center text-white shadow-xl card-hover">
+                                    <div class="control-disponible-icon">${state.estadoDECE.disponible ? '✅' : '❌'}</div>
+                                    <div class="control-disponible-title font-black">
+                                        ${state.estadoDECE.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE'}
+                                    </div>
+                                    <p class="control-disponible-text opacity-90">${state.estadoDECE.disponible ? 'Recibiendo solicitudes' : 'Sistema pausado'}</p>
+                                    <button onclick="cambiarDisponibilidad()" class="${state.estadoDECE.disponible ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white control-disponible-btn rounded-xl font-bold transition-all btn-modern">
+                                        <span>${state.estadoDECE.disponible ? '⏸️ Pausar' : '▶️ Activar'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 control-stats-card rounded-xl text-center text-white shadow-lg card-hover">
+                                        <div class="control-stats-number font-black">${state.estadisticas.pendientes}</div>
+                                        <div class="control-stats-label font-semibold opacity-90">⏳ Pendientes</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-green-400 to-green-500 control-stats-card rounded-xl text-center text-white shadow-lg card-hover">
+                                        <div class="control-stats-number font-black">${state.estadisticas.aceptados}</div>
+                                        <div class="control-stats-label font-semibold opacity-90">✅ Aceptados</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-orange-400 to-orange-500 control-stats-card rounded-xl text-center text-white shadow-lg card-hover">
+                                        <div class="control-stats-number font-black">${state.estadisticas.enProceso}</div>
+                                        <div class="control-stats-label font-semibold opacity-90">🔄 En proceso</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-blue-400 to-blue-500 control-stats-card rounded-xl text-center text-white shadow-lg card-hover">
+                                        <div class="control-stats-number font-black">${state.estadisticas.atendidos}</div>
+                                        <div class="control-stats-label font-semibold opacity-90">✔️ Atendidos</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3xl shadow-2xl p-6 mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                                <span class="text-3xl">📊</span> Estadísticas del Día
+                            </h2>
+                            <div id="estadisticas">
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-5 rounded-2xl text-center border-2 border-gray-300 card-hover">
+                                        <div class="text-3xl font-black text-gray-700 mb-1">${state.estadisticas.totalHoy}</div>
+                                        <div class="text-xs text-gray-600 font-semibold">📋 Total hoy</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-5 rounded-2xl text-center border-2 border-yellow-300 card-hover">
+                                        <div class="text-3xl font-black text-yellow-700 mb-1">${state.turnos.filter(t => t.estado === 'pendiente' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
+                                        <div class="text-xs text-yellow-600 font-semibold">⏳ Pendientes</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-5 rounded-2xl text-center border-2 border-orange-300 card-hover">
+                                        <div class="text-3xl font-black text-orange-700 mb-1">${state.estadisticas.enProceso}</div>
+                                        <div class="text-xs text-orange-600 font-semibold">🔄 En proceso</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-2xl text-center border-2 border-blue-300 card-hover">
+                                        <div class="text-3xl font-black text-blue-700 mb-1">${state.turnos.filter(t => t.estado === 'atendido' && new Date(t.created_at).toLocaleDateString('es-ES') === new Date().toLocaleDateString('es-ES')).length}</div>
+                                        <div class="text-xs text-blue-600 font-semibold">✔️ Completados</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-2xl text-center border-2 border-purple-300 card-hover">
+                                        <div class="text-3xl font-black text-purple-700 mb-1">${state.estadisticas.no_asistio}</div>
+                                        <div class="text-xs text-purple-600 font-semibold">🚫 No asistió</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3xl shadow-2xl p-6">
+                            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                                    <span class="text-3xl">📋</span> Gestión de Turnos
+                                </h2>
+                                <div class="flex gap-2 flex-wrap">
+                                    <button onclick="filtrarTurnos('todos')" class="px-4 py-2 rounded-lg font-semibold transition-all ${state.filtroTurnos === 'todos' ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}">
+                                        📋 Todos
+                                    </button>
+                                    <button onclick="filtrarTurnos('pendiente')" class="px-4 py-2 rounded-lg font-semibold transition-all ${state.filtroTurnos === 'pendiente' ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'}">
+                                        ⏳ Pendientes
+                                    </button>
+                                    <button onclick="filtrarTurnos('aceptado')" class="px-4 py-2 rounded-lg font-semibold transition-all ${state.filtroTurnos === 'aceptado' ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}">
+                                        ✅ Aceptados
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <input type="text" placeholder="🔍 Buscar por nombre, curso o email..." 
+                                    class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 text-lg"
+                                    oninput="state.busqueda = this.value; actualizarListaTurnosUI();">
                             </div>
                             
                             <div id="listaTurnos" class="space-y-4">
@@ -1994,42 +2042,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-        }
-
-        function renderEstadisticasHTML() {
-            const stats = state.estadisticas;
-            return `
-                <div class="bg-blue-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.totalHoy}</div>
-                    <div class="control-stats-label opacity-90">Hoy</div>
-                </div>
-                <div class="bg-yellow-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.pendientes}</div>
-                    <div class="control-stats-label opacity-90">Pendientes</div>
-                </div>
-                <div class="bg-green-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.aceptados}</div>
-                    <div class="control-stats-label opacity-90">Aceptados</div>
-                </div>
-                ${stats.enProceso > 0 ? `
-                <div class="bg-orange-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.enProceso}</div>
-                    <div class="control-stats-label opacity-90">En Proceso</div>
-                </div>
-                ` : ''}
-                <div class="bg-indigo-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.atendidos}</div>
-                    <div class="control-stats-label opacity-90">Atendidos</div>
-                </div>
-                <div class="bg-red-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.rechazados}</div>
-                    <div class="control-stats-label opacity-90">Rechazados</div>
-                </div>
-                <div class="bg-gray-500 text-white p-6 rounded-xl shadow-lg card-hover control-stats-card">
-                    <div class="control-stats-number font-black">${stats.no_asistio}</div>
-                    <div class="control-stats-label opacity-90">No Asistió</div>
                 </div>
             `;
         }
