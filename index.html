@@ -772,18 +772,22 @@
         // FUNCIONES DE DATOS
         async function verificarYActualizarEstadosTurnos(turnos) {
             for (const turno of turnos) {
+                // Solo procesar turnos aceptados con hora programada
                 if (turno.estado === 'aceptado' && turno.hora_atencion_programada) {
                     const horaInicio = HoraUtils.extraerHoraInicio(turno.hora_atencion_programada);
                     
                     if (!horaInicio) continue;
                     
+                    // Si la cita ya terminó (pasaron más de 40 minutos), marcar automáticamente como ATENDIDO
                     if (HoraUtils.citaYaTermino(horaInicio)) {
-                        console.log(`✅ Auto-marcando turno ${turno.id} como ATENDIDO`);
+                        console.log(`✅ Auto-marcando turno ${turno.id} como ATENDIDO (cita terminada)`);
                         await supabase.from('turnos').update({ 
                             estado: 'atendido',
                             hora_atencion: new Date().toISOString()
                         }).eq('id', turno.id);
                     }
+                    // Si la cita está en proceso, se mostrará visualmente en el renderizado
+                    // (no necesitamos cambiar el estado en la BD, solo se muestra en la UI)
                 }
             }
         }
@@ -1328,13 +1332,8 @@
                 state.estadoDECE.disponible = nuevoEstado;
                 showNotification(nuevoEstado ? 'Sistema activado ✅' : 'Sistema pausado ⏸️', 'info');
                 
-                actualizarEstadoDECEUI();
-                
-                const btn = document.getElementById('btnDisponibilidad');
-                if (btn) {
-                    btn.className = `${nuevoEstado ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} control-disponible-btn text-white rounded-xl font-bold transition-all shadow-lg btn-modern`;
-                    btn.innerHTML = `<span>${nuevoEstado ? '⏸️ Pausar Sistema' : '▶️ Activar Sistema'}</span>`;
-                }
+                // FORZAR RENDERIZADO COMPLETO para actualizar TODO el panel DECE
+                render();
             } catch (error) {
                 console.error('Error:', error);
                 showNotification('Error: ' + error.message, 'error');
@@ -2573,7 +2572,11 @@
         
         window.refrescarManual = async () => {
             await cargarDatos();
-            showNotification('Actualizado', 'info');
+            // Forzar renderizado completo solo si estamos en el panel DECE
+            if (state.vista === 'dece') {
+                render();
+            }
+            showNotification('Datos actualizados ✅', 'success');
         };
         
         window.aceptarTurnoConHora = async (id) => {
@@ -2587,16 +2590,24 @@
         };
         
         window.editarHora = async (id, horaActual) => {
-            const hora = prompt('Modificar hora:', horaActual);
-            if (hora && hora !== horaActual) {
+            const hora = prompt('Modificar hora de inicio (formato 24h, ej: 10:00):', HoraUtils.extraerHoraInicio(horaActual) || '10:00');
+            if (hora && hora !== horaActual && /^\d{1,2}:\d{2}$/.test(hora)) {
                 try {
-                    const { error } = await supabase.from('turnos').update({ hora_atencion_programada: hora }).eq('id', id);
+                    // Regenerar el rango completo con 40 minutos
+                    const rangoCompleto = HoraUtils.generarRango(hora);
+                    
+                    const { error } = await supabase.from('turnos').update({ 
+                        hora_atencion_programada: rangoCompleto 
+                    }).eq('id', id);
+                    
                     if (error) throw error;
                     await cargarDatos();
-                    showNotification('Hora actualizada', 'success');
+                    showNotification('Hora actualizada con rango de 40 minutos ✅', 'success');
                 } catch (error) {
                     showNotification('Error: ' + error.message, 'error');
                 }
+            } else if (hora && !/^\d{1,2}:\d{2}$/.test(hora)) {
+                showNotification('Formato inválido. Usa HH:MM (ej: 10:00)', 'error');
             }
         };
         
