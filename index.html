@@ -528,6 +528,11 @@
                     teacher_email: emailProfesor
                 };
                 
+                console.log('📧 Preparando envío de email...');
+                console.log('Service ID:', EMAILJS_CONFIG.SERVICE_ID);
+                console.log('Template ID:', EMAILJS_CONFIG.TEMPLATE_ACEPTADO_UNIFICADO);
+                console.log('Params:', templateParams);
+                
                 // Enviar al estudiante
                 await emailjs.send(
                     EMAILJS_CONFIG.SERVICE_ID,
@@ -560,7 +565,6 @@
             }
         }
         
-        // ========== NUEVA FUNCIÓN: EMAIL DE RECHAZO PARA ESTUDIANTES ==========
         // ========== FUNCIÓN UNIFICADA: EMAIL DE RECHAZO ==========
         async function enviarEmailRechazo(turno, motivoRechazo) {
             console.log('📧 ENVIANDO EMAIL DE RECHAZO');
@@ -608,6 +612,11 @@
                     teacher_name: String(turno.nombre_profesor || ''),
                     teacher_email: emailProfesor
                 };
+                
+                console.log('📧 Preparando envío de email de RECHAZO...');
+                console.log('Service ID:', EMAILJS_CONFIG.SERVICE_ID);
+                console.log('Template ID:', EMAILJS_CONFIG.TEMPLATE_RECHAZO_UNIFICADO);
+                console.log('Params:', templateParams);
                 
                 // Enviar al estudiante
                 await emailjs.send(
@@ -2025,30 +2034,33 @@
             const esSolicitadoPorProfesor = turno.solicitado_por === 'profesor';
             
             return `
-                <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 ${coloresEstado[turno.estado]} card-hover">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="text-3xl">${iconosEstado[turno.estado]}</span>
+                <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 ${coloresEstado[turno.estado]} card-hover">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${iconosEstado[turno.estado]}</span>
                             <div>
-                                <h3 class="text-xl font-bold text-gray-800">${turno.nombre}</h3>
-                                <p class="text-gray-600">${turno.curso}</p>
+                                <h3 class="text-lg font-bold text-gray-800">${turno.nombre}</h3>
+                                <p class="text-sm text-gray-600">${turno.curso}</p>
                                 ${esSolicitadoPorProfesor ? `
-                                    <p class="text-sm text-purple-600 font-semibold mt-1">👨‍🏫 Solicitado por: ${turno.nombre_profesor || 'Profesor'}</p>
+                                    <p class="text-xs text-purple-600 font-semibold mt-1">👨‍🏫 Solicitado por: ${turno.nombre_profesor || 'Profesor'}</p>
                                 ` : ''}
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="text-sm text-gray-500">#${turno.numero_turno}</div>
+                            <div class="text-xs text-gray-500">#${turno.numero_turno}</div>
                             <div class="text-xs text-gray-400">${new Date(turno.created_at).toLocaleString('es-ES')}</div>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                    <div class="grid grid-cols-2 gap-3 mb-3 text-sm">
                         <div><span class="font-semibold">📋 Motivo:</span> ${turno.motivo}</div>
                         <div><span class="font-semibold">📧 Email:</span> ${turno.email_estudiante || 'N/A'}</div>
                         ${turno.hora_atencion_programada ? `
-                            <div class="col-span-2"><span class="font-semibold">🕐 Hora:</span> ${turno.hora_atencion_programada} 
-                                <button onclick="editarHora(${turno.id}, '${turno.hora_atencion_programada}')" class="text-blue-500 hover:text-blue-700 ml-2">✏️</button>
+                            <div class="col-span-2">
+                                <span class="font-semibold">🕐 Hora:</span> ${turno.hora_atencion_programada}
+                                ${turno.estado !== 'atendido' ? `
+                                    <button onclick="editarHora(${turno.id}, '${turno.hora_atencion_programada}')" class="text-blue-500 hover:text-blue-700 ml-2">✏️</button>
+                                ` : ''}
                             </div>
                         ` : ''}
                         ${turno.motivo_rechazo ? `
@@ -2060,37 +2072,37 @@
                     </div>
                     
                     ${turno.situacion ? `
-                        <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                        <div class="bg-gray-50 p-2 rounded-lg mb-3 text-sm">
                             <span class="font-semibold text-gray-700">💬 Situación:</span>
                             <p class="text-gray-600 mt-1">${turno.situacion}</p>
                         </div>
                     ` : ''}
                     
                     ${estaEnProceso ? `
-                        <div class="badge-en-proceso text-white px-4 py-2 rounded-lg text-center mb-4 font-bold">
+                        <div class="badge-en-proceso text-white px-3 py-2 rounded-lg text-center mb-3 font-bold text-sm">
                             🔄 CITA EN PROCESO
                         </div>
                     ` : ''}
                     
                     <div class="flex flex-wrap gap-2">
                         ${turno.estado === 'pendiente' ? `
-                            <button onclick="aceptarTurnoConHora(${turno.id})" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold">
-                                ✅ Aceptar
+                            <button onclick="aceptarTurnoConHora(${turno.id})" class="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold text-sm">
+                                Aceptar
                             </button>
-                            <button onclick="rechazarTurno(${turno.id})" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold">
-                                ❌ Rechazar
+                            <button onclick="rechazarTurno(${turno.id})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold text-sm">
+                                Rechazar
                             </button>
                         ` : ''}
                         ${turno.estado === 'aceptado' ? `
-                            <button onclick="marcarAtendido(${turno.id})" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all font-semibold">
-                                ✔️ Atendido
+                            <button onclick="marcarAtendido(${turno.id})" class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-all font-semibold text-sm">
+                                Atendido
                             </button>
-                            <button onclick="marcarNoAsistio(${turno.id})" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all font-semibold">
-                                🚫 No asistió
+                            <button onclick="marcarNoAsistio(${turno.id})" class="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition-all font-semibold text-sm">
+                                No asistió
                             </button>
                         ` : ''}
-                        <button onclick="agregarNotaDECE(${turno.id})" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-all font-semibold">
-                            📝 Nota
+                        <button onclick="agregarNotaDECE(${turno.id})" class="bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-600 transition-all font-semibold text-sm">
+                            Nota
                         </button>
                     </div>
                 </div>
