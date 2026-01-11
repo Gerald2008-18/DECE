@@ -11,73 +11,72 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-        
+
         * {
             font-family: 'Poppins', sans-serif;
         }
-        
-        /* PANTALLA DE CARGA */
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         @keyframes slideInLeft {
             from { opacity: 0; transform: translateX(-50px); }
             to { opacity: 1; transform: translateX(0); }
         }
-        
+
         @keyframes slideInRight {
             from { opacity: 0; transform: translateX(50px); }
             to { opacity: 1; transform: translateX(0); }
         }
-        
+
         @keyframes scaleIn {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(1.05); }
         }
-        
+
         .fade-in { animation: fadeIn 0.5s ease-out; }
         .slide-in-left { animation: slideInLeft 0.6s ease-out; }
         .slide-in-right { animation: slideInRight 0.6s ease-out; }
         .scale-in { animation: scaleIn 0.4s ease-out; }
-        
+
         .gradient-bg {
             background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #3b82f6 100%);
         }
-        
+
         .gradient-bg-2 {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .gradient-bg-3 {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .gradient-bg-4 {
             background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
         }
-        
+
         .card-hover {
             transition: all 0.3s ease;
         }
-        
+
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        
+
         .btn-modern {
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
         }
-        
+
         .btn-modern::before {
             content: '';
             position: absolute;
@@ -90,45 +89,45 @@
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
         }
-        
+
         .btn-modern:hover::before {
             width: 300px;
             height: 300px;
         }
-        
+
         .btn-modern span {
             position: relative;
             z-index: 1;
         }
-        
+
         .smooth-update {
             transition: all 0.3s ease;
         }
-        
+
         .logo-institucional {
             width: 70px;
             height: 70px;
             object-fit: contain;
             filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
         }
-        
+
         .badge-en-proceso {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
         }
-        
+
         ::-webkit-scrollbar {
             width: 10px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 5px;
         }
-        
+
         .select-modern {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
@@ -137,7 +136,6 @@
             background-size: 1.5em;
         }
 
-    
         .control-disponible-card {
             padding: 1.5rem;
             min-height: auto;
@@ -176,31 +174,29 @@
             font-size: 0.875rem;
         }
 
-        /* Ajustes para pantallas grandes */
         @media (min-width: 1400px) {
             .control-disponible-card {
                 padding: 2rem;
             }
-            
+
             .control-disponible-icon {
                 font-size: 3.5rem;
             }
-            
+
             .control-disponible-title {
                 font-size: 2rem;
             }
         }
 
-        /* Ajustes para pantallas muy grandes */
         @media (min-width: 1920px) {
             .control-disponible-card {
                 padding: 2.5rem;
             }
-            
+
             .control-disponible-icon {
                 font-size: 4rem;
             }
-            
+
             .control-disponible-title {
                 font-size: 2.25rem;
             }
@@ -212,52 +208,47 @@
     </style>
 </head>
 <body class="gradient-bg min-h-screen relative overflow-x-hidden">
-    <!-- PANTALLA DE CARGA -->
+
     <div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
-    
+
     <audio id="notificationSound" preload="auto">
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSBEL" type="audio/wav">
     </audio>
-    
+
     <div id="app"></div>
 
     <script>
-        // UTILIDADES DE FORMATO
+
         function normalizarNombre(nombre) {
             if (!nombre) return 'N/A';
             const partes = nombre.trim().split(/\s+/);
-            
-            // Si tiene 4 partes (2 apellidos y 2 nombres), invertimos el orden
-            // de "APELLIDO1 APELLIDO2 NOMBRE1 NOMBRE2" a "NOMBRE1 NOMBRE2 APELLIDO1 APELLIDO2"
+
             if (partes.length === 4) {
                 return `${partes[2]} ${partes[3]} ${partes[0]} ${partes[1]}`.toUpperCase();
             }
-            
-            // Si tiene 3 partes (podría ser 2 apellidos y 1 nombre), invertimos
-            // de "APELLIDO1 APELLIDO2 NOMBRE1" a "NOMBRE1 APELLIDO1 APELLIDO2"
+
             if (partes.length === 3) {
                 return `${partes[2]} ${partes[0]} ${partes[1]}`.toUpperCase();
             }
-            
+
             return nombre.toUpperCase();
         }
 
-        // SISTEMA DE NOTIFICACIONES
         function showNotification(mensaje, tipo = 'info') {
             if (mensaje !== 'El turno ha sido solicitado') {
                 return;
             }
-            
+
             const container = document.getElementById('notifications');
             const id = Date.now();
-            
+
             const colores = {
                 success: 'bg-green-500',
                 error: 'bg-red-500',
                 warning: 'bg-yellow-500',
                 info: 'bg-blue-500'
             };
-            
+
             const notif = document.createElement('div');
             notif.id = `notif-${id}`;
             notif.className = `${colores[tipo]} text-white px-6 py-4 rounded-xl shadow-2xl max-w-md fade-in`;
@@ -267,24 +258,23 @@
                     <span class="font-semibold">${mensaje}</span>
                 </div>
             `;
-            
+
             container.appendChild(notif);
-            
+
             setTimeout(() => {
                 notif.style.opacity = '0';
                 notif.style.transform = 'translateX(400px)';
                 setTimeout(() => notif.remove(), 300);
             }, 4000);
         }
-        
+
         function playNotificationSound() {
             const audio = document.getElementById('notificationSound');
             if (audio) {
                 audio.play().catch(e => console.log('No se pudo reproducir el sonido'));
             }
         }
-        
-        // BASE DE DATOS DE CURSOS Y PARALELOS 
+
         const CURSOS_PARALELOS = {
             "Inicial": {
                 "cursos": [
@@ -353,20 +343,17 @@
                 }
             }
         };
-        
-        // Función para ordenar cursos en el orden correcto: Inicial → Bachillerato
+
         function ordenarCursosCorrectamente(cursos) {
             const ordenPrioridad = {
-                // Inicial
+
                 'Inicial 1 A - Inicial': 1,
                 'Inicial 2 A - Inicial': 2,
                 'Inicial 2 B - Inicial': 3,
-                
-                // Preparatoria (Primero)
+
                 'Primer Grado A - Preparatoria': 10,
                 'Primer Grado B - Preparatoria': 11,
-                
-                // Educación General Básica (EGB) - Segundo a Séptimo
+
                 'Segundo Grado A - Educación General Básica': 12,
                 'Segundo Grado B - Educación General Básica': 13,
                 'Tercer Grado A - Educación General Básica': 14,
@@ -378,8 +365,7 @@
                 'Sexto Grado A - Educación General Básica': 20,
                 'Sexto Grado B - Educación General Básica': 21,
                 'Séptimo Grado A - Educación General Básica': 22,
-                
-                // Educación General Básica (EGB) - Octavo a Décimo
+
                 'Octavo Grado A - Educación General Básica': 23,
                 'Octavo Grado B - Educación General Básica': 24,
                 'Octavo Grado C - Educación General Básica': 25,
@@ -389,45 +375,37 @@
                 'Décimo Grado A - Educación General Básica': 29,
                 'Décimo Grado B - Educación General Básica': 30,
                 'Décimo Grado C - Educación General Básica': 31,
-                
-                // Bachillerato - Primer Año 
+
                 'Primer Año BGU A - Bachillerato Ciencias': 40,
                 'Primer Año BGU B - Bachillerato Ciencias': 41,
                 'Primer Año BGU A - Bachillerato TICS Informática': 42,
                 'Primer Año BGU A - Bachillerato Contabilidad': 43,
-                
-                // Bachillerato - Segundo Año 
+
                 'Segundo Año BGU A - Bachillerato Ciencias': 50,
                 'Segundo Año BGU B - Bachillerato Ciencias': 51,
                 'Segundo Año BGU A - Bachillerato TICS Informática': 52,
                 'Segundo Año BGU A - Bachillerato Contabilidad': 53,
-                
-                // Bachillerato - Tercer Año 
+
                 'Tercer Año BGU A - Bachillerato Ciencias': 60,
                 'Tercer Año BGU B - Bachillerato Ciencias': 61,
                 'Tercer Año BGU A - Bachillerato TICS Informática': 62,
                 'Tercer Año BGU B - Bachillerato TICS Informática': 63
             };
-            
+
             return cursos.sort((a, b) => {
                 const prioridadA = ordenPrioridad[a] || 9999;
                 const prioridadB = ordenPrioridad[b] || 9999;
-                
-        
+
                 if (prioridadA !== 9999 || prioridadB !== 9999) {
                     return prioridadA - prioridadB;
                 }
-                
-            
+
                 return a.localeCompare(b, 'es');
             });
         }
-        
-        
-        // BASE DE DATOS DE ESTUDIANTES
+
         let ESTUDIANTES_BD = {};
-        
-        // Cargar base de datos de estudiantes - 
+
         async function cargarEstudiantes() {
             try {
                 const response = await fetch('estudiantes_uepdc.json');
@@ -437,15 +415,14 @@
                 return true;
             } catch (error) {
                 console.error('❌ Error al cargar estudiantes:', error);
-        
+
                 return false;
             }
         }
-        
-        // Buscar estudiante por email
+
         function buscarEstudiantePorEmail(email) {
             for (const curso in ESTUDIANTES_BD) {
-                const estudiante = ESTUDIANTES_BD[curso].find(e => 
+                const estudiante = ESTUDIANTES_BD[curso].find(e =>
                     e['Email estudiante'].toLowerCase() === email.toLowerCase()
                 );
                 if (estudiante) {
@@ -458,19 +435,16 @@
             }
             return null;
         }
-        
-        // CONFIGURACIÓN DE EMAILJS 
+
         const EMAILJS_CONFIG = {
             PUBLIC_KEY: 'RtA5YFyTxrNjrb_CX',
             SERVICE_ID: 'service_83qp86c',
             TEMPLATE_ACEPTADO_UNIFICADO: 'template_oozm99r',
             TEMPLATE_RECHAZO_UNIFICADO: 'template_x6r7fzo'
         };
-        
-       
+
         let emailJSReady = false;
-        
-        // Inicializar EmailJS 
+
         function initEmailJS() {
             try {
                 if (typeof emailjs !== 'undefined') {
@@ -485,55 +459,53 @@
                 console.error('❌ Error al inicializar EmailJS:', error);
             }
         }
-        
-        // FUNCIÓN DE ENVÍO DE EMAIL - ACEPTACIÓN
+
         async function enviarEmailAceptacion(turno) {
             console.log('📧 INICIANDO ENVÍO DE EMAIL DE ACEPTACIÓN');
-            
+
             if (!emailJSReady || typeof emailjs === 'undefined') {
                 console.warn('⚠️ EmailJS no está disponible');
                 return false;
             }
-            
+
             if (!turno || typeof turno !== 'object') {
                 console.error('❌ Turno no válido');
                 return false;
             }
-            
+
             let emailEstudiante = turno.email_estudiante || turno.correo_estudiante || turno.email;
-            
+
             if (!emailEstudiante) {
                 console.error('❌ Email es NULL o undefined');
                 return false;
             }
-            
+
             const emailEstudianteLimpio = String(emailEstudiante).trim();
             const emailProfesor = String(turno.email_profesor || '').trim();
             const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
+
             if (!regexEmail.test(emailEstudianteLimpio)) {
                 console.error('❌ Email del estudiante con formato inválido:', emailEstudianteLimpio);
                 return false;
             }
-            
+
             try {
-                const fechaSolicitud = turno.created_at 
-                    ? new Date(turno.created_at).toLocaleDateString('es-ES', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                const fechaSolicitud = turno.created_at
+                    ? new Date(turno.created_at).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                     })
                     : 'No disponible';
-                
+
                 const horaSolicitud = turno.created_at
-                    ? new Date(turno.created_at).toLocaleTimeString('es-ES', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                    ? new Date(turno.created_at).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                     })
                     : 'No disponible';
-                
-                // Template params - funciona para ambos casos (estudiante y profesor)
+
 	                const templateParams = {
 	                    to_email: emailEstudianteLimpio,
 	                    reply_to: emailEstudianteLimpio,
@@ -549,62 +521,59 @@
                     teacher_name: String(turno.nombre_profesor || ''),
                     teacher_email: emailProfesor
                 };
-                
+
                 console.log('📧 Preparando envío de email...');
                 console.log('Service ID:', EMAILJS_CONFIG.SERVICE_ID);
                 console.log('Template ID:', EMAILJS_CONFIG.TEMPLATE_ACEPTADO_UNIFICADO);
                 console.log('Params:', templateParams);
-                
-                // Enviar SOLO al estudiante (nunca al profesor)
+
                 await emailjs.send(
                     EMAILJS_CONFIG.SERVICE_ID,
                     EMAILJS_CONFIG.TEMPLATE_ACEPTADO_UNIFICADO,
                     templateParams
                 );
                 console.log('✅ Email de aceptación enviado al estudiante');
-                
+
                 return true;
-                
+
             } catch (error) {
                 console.error('❌ ERROR AL ENVIAR EMAIL:', error);
                 return false;
             }
         }
-        
-    
+
         async function enviarEmailRechazo(turno, motivoRechazo) {
             console.log('📧 ENVIANDO EMAIL DE RECHAZO');
-            
+
             if (!emailJSReady || typeof emailjs === 'undefined') {
                 console.warn('⚠️ EmailJS no está disponible');
                 return false;
             }
-            
+
             if (!turno || !turno.email_estudiante) {
                 console.error('❌ Datos del turno incompletos');
                 return false;
             }
-            
+
             const emailEstudiante = String(turno.email_estudiante || '').trim();
             const emailProfesor = String(turno.email_profesor || '').trim();
             const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
+
             if (!regexEmail.test(emailEstudiante)) {
                 console.error('❌ Email del estudiante inválido');
                 return false;
             }
-            
+
             try {
-                const fechaSolicitud = turno.created_at 
-                    ? new Date(turno.created_at).toLocaleDateString('es-ES', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                const fechaSolicitud = turno.created_at
+                    ? new Date(turno.created_at).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                     })
                     : 'No disponible';
-                
-            
+
 	                const templateParams = {
 	                    to_email: emailEstudiante,
 	                    reply_to: emailEstudiante,
@@ -618,29 +587,27 @@
                     teacher_name: String(turno.nombre_profesor || ''),
                     teacher_email: emailProfesor
                 };
-                
+
                 console.log('📧 Preparando envío de email de RECHAZO...');
                 console.log('Service ID:', EMAILJS_CONFIG.SERVICE_ID);
                 console.log('Template ID:', EMAILJS_CONFIG.TEMPLATE_RECHAZO_UNIFICADO);
                 console.log('Params:', templateParams);
-                
-                // Enviar al estudiante
+
                 await emailjs.send(
                     EMAILJS_CONFIG.SERVICE_ID,
                     EMAILJS_CONFIG.TEMPLATE_RECHAZO_UNIFICADO,
                     templateParams
                 );
                 console.log('✅ Email de rechazo enviado al estudiante');
-                
+
                 return true;
-                
+
             } catch (error) {
                 console.error('❌ ERROR AL ENVIAR EMAIL DE RECHAZO:', error);
                 return false;
             }
         }
-        
-        // CONFIGURACIÓN DE SUPABASE
+
         const SUPABASE_URL = 'https://hynubiwdlpkfzqgzahlp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5bnViaXdkbHBrZnpxZ3phaGxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2MDM1MzYsImV4cCI6MjA3OTE3OTUzNn0.xbiu1OVD9I8V_NYj0gem1zK5wICW_cXrxIoRRwQFbAg';
 
@@ -653,27 +620,27 @@
             getHoraEcuador() {
                 const ahora = new Date();
                 try {
-                    const opciones = { 
-                        timeZone: 'America/Guayaquil', 
+                    const opciones = {
+                        timeZone: 'America/Guayaquil',
                         year: 'numeric',
-                        month: '2-digit', 
+                        month: '2-digit',
                         day: '2-digit',
-                        hour: '2-digit', 
+                        hour: '2-digit',
                         minute: '2-digit',
                         second: '2-digit',
                         hour12: false
                     };
-                    
+
                     const formateador = new Intl.DateTimeFormat('es-EC', opciones);
                     const partes = formateador.formatToParts(ahora);
-                    
+
                     const valores = {};
                     partes.forEach(parte => {
                         if (parte.type !== 'literal') {
                             valores[parte.type] = parte.value;
                         }
                     });
-                    
+
                     const horaEcuador = new Date(
                         parseInt(valores.year),
                         parseInt(valores.month) - 1,
@@ -682,44 +649,44 @@
                         parseInt(valores.minute),
                         parseInt(valores.second)
                     );
-                    
+
                     return horaEcuador;
-                    
+
                 } catch (error) {
                     const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
                     return new Date(utc + (-5 * 3600000));
                 }
             },
-            
+
             horaAMinutos(hora) {
                 const [h, m] = hora.split(':').map(Number);
                 return h * 60 + m;
             },
-            
+
             minutosAHora(minutos) {
                 const h = Math.floor(minutos / 60);
                 const m = minutos % 60;
                 return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
             },
-            
+
             agregarMinutos(hora, minutos) {
                 const minutosActual = this.horaAMinutos(hora);
                 const nuevosMinutos = minutosActual + minutos;
                 return this.minutosAHora(nuevosMinutos);
             },
-            
+
             formatearAMPM(hora) {
                 const [h, m] = hora.split(':').map(Number);
                 const ampm = h >= 12 ? 'p.m' : 'a.m';
                 const hora12 = h % 12 || 12;
                 return `${hora12}:${m.toString().padStart(2, '0')} ${ampm}`;
             },
-            
+
             generarRango(horaInicio) {
                 const horaFin = this.agregarMinutos(horaInicio, 40);
                 return `${this.formatearAMPM(horaInicio)} a ${this.formatearAMPM(horaFin)}`;
             },
-            
+
             citaYaTermino(horaInicio) {
                 const horaEcuador = this.getHoraEcuador();
                 const horaActualMinutos = horaEcuador.getHours() * 60 + horaEcuador.getMinutes();
@@ -727,7 +694,7 @@
                 const horaFinMinutos = horaInicioMinutos + 40;
                 return horaActualMinutos >= horaFinMinutos;
             },
-            
+
             citaEnProceso(horaInicio) {
                 const horaEcuador = this.getHoraEcuador();
                 const horaActualMinutos = horaEcuador.getHours() * 60 + horaEcuador.getMinutes();
@@ -735,26 +702,25 @@
                 const horaFinMinutos = horaInicioMinutos + 40;
                 return horaActualMinutos >= horaInicioMinutos && horaActualMinutos < horaFinMinutos;
             },
-            
+
             extraerHoraInicio(rangoHora) {
                 const match = rangoHora.match(/(\d{1,2}):(\d{2})\s*(a\.m|p\.m)/);
                 if (!match) return null;
-                
+
                 let hora = parseInt(match[1]);
                 const minutos = match[2];
                 const periodo = match[3];
-                
+
                 if (periodo === 'p.m' && hora !== 12) {
                     hora += 12;
                 } else if (periodo === 'a.m' && hora === 12) {
                     hora = 0;
                 }
-                
+
                 return `${hora.toString().padStart(2, '0')}:${minutos}`;
             }
         };
 
-        // ESTADO DE LA APLICACIÓN
         let state = {
             vista: 'login',
             tipoUsuario: null,
@@ -778,7 +744,6 @@
             mostrarHistorial: false
         };
 
-        // CLIENTE SUPABASE - OPTIMIZADO
         const supabase = {
             from: (table) => ({
                 select: async (columns = '*') => {
@@ -830,17 +795,16 @@
             })
         };
 
-        // FUNCIONES DE DATOS
         async function verificarYActualizarEstadosTurnos(turnos) {
             for (const turno of turnos) {
                 if (turno.estado === 'aceptado' && turno.hora_atencion_programada) {
                     const horaInicio = HoraUtils.extraerHoraInicio(turno.hora_atencion_programada);
-                    
+
                     if (!horaInicio) continue;
-                    
+
                     if (HoraUtils.citaYaTermino(horaInicio)) {
                         console.log(`✅ Auto-marcando turno ${turno.id} como ATENDIDO (cita terminada)`);
-                        await supabase.from('turnos').update({ 
+                        await supabase.from('turnos').update({
                             estado: 'atendido',
                             hora_atencion: new Date().toISOString()
                         }).eq('id', turno.id);
@@ -848,7 +812,7 @@
                 }
             }
         }
-        
+
         async function cargarDatos() {
             try {
                 const { data: config } = await supabase.from('configuracion').select('*');
@@ -859,17 +823,17 @@
                         actualizarEstadoDECEUI();
                     }
                 }
-                
+
                 const { data: turnosData } = await supabase.from('turnos').select('*');
                 if (turnosData) {
                     await verificarYActualizarEstadosTurnos(turnosData);
-                    
+
                     const { data: turnosActualizados } = await supabase.from('turnos').select('*');
                     const turnosOrdenados = turnosActualizados.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                    
+
                     state.turnos = turnosOrdenados;
                     calcularEstadisticas();
-                    
+
                     if (state.vista === 'dece') {
                         actualizarEstadisticasUI();
                         actualizarListaTurnosUI();
@@ -877,13 +841,13 @@
                         render();
                     }
                 }
-                
+
                 const miTurnoId = localStorage.getItem('miTurnoId');
                 if (miTurnoId && turnosData) {
                     const turnoActualizado = state.turnos.find(t => t.id === parseInt(miTurnoId));
                     if (turnoActualizado) {
                         state.miTurno = turnoActualizado;
-                        
+
                         if (state.vista === 'estudiante' && state.miTurno) {
                             actualizarMiTurnoUI();
                         }
@@ -899,10 +863,10 @@
 
         function calcularEstadisticas() {
             const hoy = new Date().toLocaleDateString('es-ES');
-            const turnosHoy = state.turnos.filter(t => 
+            const turnosHoy = state.turnos.filter(t =>
                 new Date(t.created_at).toLocaleDateString('es-ES') === hoy
             );
-            
+
             let enProceso = 0;
             state.turnos.forEach(t => {
                 if (t.estado === 'aceptado' && t.hora_atencion_programada) {
@@ -912,7 +876,7 @@
                     }
                 }
             });
-            
+
             state.estadisticas = {
                 totalHoy: turnosHoy.length,
                 pendientes: state.turnos.filter(t => t.estado === 'pendiente').length,
@@ -939,11 +903,10 @@
             }
         }
 
-        // FUNCIONES DE ACTUALIZACIÓN UI
         function actualizarEstadoDECEUI() {
             const elemento = document.getElementById('estadoDECE');
             if (!elemento) return;
-            
+
             const disponible = state.estadoDECE.disponible;
             elemento.innerHTML = `
                 <div class="${disponible ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-red-400 to-red-500'} p-10 rounded-2xl text-center text-white shadow-xl smooth-update">
@@ -955,11 +918,11 @@
                 </div>
             `;
         }
-        
+
         function actualizarEstadisticasUI() {
             const elemento = document.getElementById('estadisticas');
             if (!elemento) return;
-            
+
             elemento.innerHTML = `
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div class="bg-gradient-to-br from-gray-100 to-gray-200 p-5 rounded-2xl text-center border-2 border-gray-300 card-hover">
@@ -984,10 +947,10 @@
                     </div>
                 </div>
             `;
-            
+
             actualizarControlUI();
         }
-        
+
         function actualizarControlUI() {
             const tarjetasPequenas = document.querySelector('.grid.grid-cols-2.gap-3');
             if (tarjetasPequenas) {
@@ -1011,35 +974,35 @@
                 `;
             }
         }
-        
+
         function actualizarListaTurnosUI() {
             const elemento = document.getElementById('listaTurnos');
             if (!elemento) return;
-            
+
             const turnosFiltrados = filtrarYBuscarTurnos();
-            
+
             if (turnosFiltrados.length === 0) {
                 elemento.innerHTML = renderSinTurnos();
                 return;
             }
-            
+
             elemento.innerHTML = `
                 <div class="space-y-4">
                     ${turnosFiltrados.map(turno => renderTurnoCard(turno)).join('')}
                 </div>
             `;
         }
-        
+
         function actualizarMiTurnoUI() {
             const elemento = document.getElementById('miTurnoContainer');
             if (!elemento || !state.miTurno) return;
-            
+
             elemento.innerHTML = renderMiTurnoContent();
         }
-        
+
         function filtrarYBuscarTurnos() {
-            let turnosFiltrados = state.filtroTurnos === 'todos' 
-                ? state.turnos 
+            let turnosFiltrados = state.filtroTurnos === 'todos'
+                ? state.turnos
                 : state.filtroTurnos === 'en_proceso'
                 ? state.turnos.filter(t => {
                     if (t.estado === 'aceptado' && t.hora_atencion_programada) {
@@ -1049,44 +1012,43 @@
                     return false;
                 })
                 : state.turnos.filter(t => t.estado === state.filtroTurnos);
-            
+
             if (state.busqueda) {
                 const busqueda = state.busqueda.toLowerCase();
-                turnosFiltrados = turnosFiltrados.filter(t => 
+                turnosFiltrados = turnosFiltrados.filter(t =>
                     t.nombre.toLowerCase().includes(busqueda) ||
                     t.cedula.includes(busqueda) ||
                     t.curso.toLowerCase().includes(busqueda) ||
                     t.email_estudiante?.toLowerCase().includes(busqueda)
                 );
             }
-            
+
             return turnosFiltrados;
         }
 
-        // AUTENTICACIÓN
         async function loginEstudiante(email, password) {
             try {
                 const response = await fetch(
                     `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(password)}&select=*`,
                     {
-                        headers: { 
-                            'apikey': SUPABASE_KEY, 
-                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
                         }
                     }
                 );
                 const usuarios = await response.json();
-                
+
                 if (!response.ok || !usuarios || usuarios.length === 0) {
                     const usuariosLocal = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
                     const usuario = usuariosLocal.find(u => u.email === email && u.password === password);
                     if (!usuario) return false;
-                    
+
                     state.usuarioActual = usuario;
                     state.tipoUsuario = 'estudiante';
                     state.vista = 'estudiante';
                     localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario }));
-                    
+
                     await cargarDatos();
                     const miTurnoId = localStorage.getItem('miTurnoId');
                     if (miTurnoId) {
@@ -1094,20 +1056,20 @@
                         if (turno) state.miTurno = turno;
                         else localStorage.removeItem('miTurnoId');
                     }
-                    
+
                     state.historialEstudiante = state.turnos.filter(t => t.email_estudiante === email);
                     render();
                     showNotification(`¡Bienvenido/a ${usuario.nombre}!`, 'success');
                     return true;
                 }
-                
+
                 if (usuarios && usuarios.length > 0) {
                     const usuario = usuarios[0];
                     state.usuarioActual = usuario;
                     state.tipoUsuario = 'estudiante';
                     state.vista = 'estudiante';
                     localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario }));
-                    
+
                     await cargarDatos();
                     const miTurnoId = localStorage.getItem('miTurnoId');
                     if (miTurnoId) {
@@ -1115,13 +1077,13 @@
                         if (turno) state.miTurno = turno;
                         else localStorage.removeItem('miTurnoId');
                     }
-                    
+
                     state.historialEstudiante = state.turnos.filter(t => t.email_estudiante === email);
                     render();
                     showNotification(`¡Bienvenido/a ${usuario.nombre}!`, 'success');
                     return true;
                 }
-                
+
                 return false;
             } catch (err) {
                 console.error('❌ Error en loginEstudiante:', err);
@@ -1132,60 +1094,60 @@
         async function registrarEstudiante(datosFormulario) {
             try {
                 const { nombre, email, cedula, nivel, grado, paralelo, password } = datosFormulario;
-                
+
                 if (!email.endsWith('@est.uepdc.edu.ec')) {
                     showNotification('❌ Debes usar tu correo institucional (@est.uepdc.edu.ec)', 'error');
                     return false;
                 }
-                
+
                 const palabrasNombre = nombre.trim().split(/\s+/);
                 if (palabrasNombre.length < 2) {
                     showNotification('❌ Ingresa tu nombre completo (nombre y apellido)', 'error');
                     return false;
                 }
-                
+
                 const cursoCompleto = `${grado} ${paralelo}`;
-                
+
                 const responseEmail = await fetch(
                     `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&select=email`,
                     {
-                        headers: { 
-                            'apikey': SUPABASE_KEY, 
-                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
                         }
                     }
                 );
                 const emailData = await responseEmail.json();
-                
+
                 if (emailData && emailData.length > 0) {
                     showNotification('El correo ya está registrado', 'error');
                     return false;
                 }
-                
+
                 const responseCedula = await fetch(
                     `${SUPABASE_URL}/rest/v1/usuarios_estudiantes?cedula=eq.${encodeURIComponent(cedula)}&select=cedula`,
                     {
-                        headers: { 
-                            'apikey': SUPABASE_KEY, 
-                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
                         }
                     }
                 );
                 const cedulaData = await responseCedula.json();
-                
+
                 if (cedulaData && cedulaData.length > 0) {
                     showNotification('La cédula ya está registrada', 'error');
                     return false;
                 }
-                
+
                 const nuevoUsuario = { nombre, email, cedula, curso: cursoCompleto, password };
                 const { data, error } = await supabase
                     .from('usuarios_estudiantes')
                     .insert([nuevoUsuario]);
-                
+
                 if (error) {
                     const usuarios = JSON.parse(localStorage.getItem('usuarios_estudiantes') || '[]');
-                    
+
                     if (usuarios.find(u => u.email === email)) {
                         showNotification('El correo ya está registrado', 'error');
                         return false;
@@ -1194,19 +1156,19 @@
                         showNotification('La cédula ya está registrada', 'error');
                         return false;
                     }
-                    
+
                     usuarios.push(nuevoUsuario);
                     localStorage.setItem('usuarios_estudiantes', JSON.stringify(usuarios));
                     showNotification('⚠️ Registrado localmente (sin conexión a BD)', 'warning');
                 } else {
                     showNotification(`¡Registro exitoso! Bienvenido/a ${nombre}`, 'success');
                 }
-                
+
                 state.usuarioActual = nuevoUsuario;
                 state.tipoUsuario = 'estudiante';
                 state.vista = 'estudiante';
                 localStorage.setItem('sesion', JSON.stringify({ tipo: 'estudiante', usuario: nuevoUsuario }));
-                
+
                 await cargarDatos();
                 render();
                 return true;
@@ -1222,7 +1184,7 @@
                 state.tipoUsuario = 'dece';
                 state.vista = 'dece';
                 localStorage.setItem('sesion', JSON.stringify({ tipo: 'dece' }));
-                
+
                 cargarDatos().then(() => {
                     render();
                     showNotification('Sesión DECE iniciada correctamente', 'success');
@@ -1232,8 +1194,6 @@
             return false;
         }
 
-
-        
         async function loginProfesor(email, password) {
             console.log('🔑 Intentando login para:', email);
             if (!email.toLowerCase().endsWith('@uepdc.edu.ec') || email.toLowerCase().endsWith('@est.uepdc.edu.ec')) {
@@ -1243,18 +1203,18 @@
             }
 
             try {
-                // Consultar en la tabla de profesores (asumiendo que existe o se creará)
+
                 const response = await fetch(
                     `${SUPABASE_URL}/rest/v1/usuarios_profesores?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(password)}&select=*`,
                     {
-                        headers: { 
-                            'apikey': SUPABASE_KEY, 
-                            'Authorization': `Bearer ${SUPABASE_KEY}` 
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
                         }
                     }
                 );
                 const usuarios = await response.json();
-                
+
                 if (!response.ok) {
                     console.error('❌ Error de Supabase:', usuarios);
                     showNotification('Error de acceso a la base de datos. Verifica las políticas RLS.', 'error');
@@ -1271,7 +1231,7 @@
                 state.tipoUsuario = 'profesor';
                 state.vista = 'profesor';
                 localStorage.setItem('sesion', JSON.stringify({ tipo: 'profesor', usuario }));
-                
+
                 await cargarDatos();
                 render();
                 showNotification(`¡Bienvenido/a Profesor/a ${usuario.nombre}!`, 'success');
@@ -1295,21 +1255,20 @@
             showNotification('Sesión cerrada', 'info');
         }
 
-        // GESTIÓN DE TURNOS
         async function registrarTurno(form) {
             if (!state.estadoDECE.disponible) {
                 showNotification('El DECE no está disponible en este momento', 'warning');
                 return false;
             }
-            
+
             try {
                 const emailEstudiante = state.usuarioActual?.email;
-                
+
                 if (!emailEstudiante || emailEstudiante.trim() === '') {
                     showNotification('Error: No se pudo obtener tu email', 'error');
                     return false;
                 }
-                
+
                 const nuevoTurno = {
                     nombre: normalizarNombre(form.nombre),
                     cedula: form.cedula,
@@ -1320,19 +1279,19 @@
                     numero_turno: state.turnos.length + 1,
                     email_estudiante: emailEstudiante.trim()
                 };
-                
+
                 const { data, error } = await supabase.from('turnos').insert([nuevoTurno]);
-                
+
                 if (error) throw error;
-                
+
                 if (data && data.length > 0) {
                     const turnoGuardado = data[0];
                     localStorage.setItem('miTurnoId', turnoGuardado.id);
                     await cargarDatos();
-                    
+
                     const turnoCreado = state.turnos.find(t => t.id === turnoGuardado.id);
                     if (turnoCreado) state.miTurno = turnoCreado;
-                    
+
                     showNotification('¡Turno registrado exitosamente! 🎉', 'success');
                     render();
                     return true;
@@ -1344,14 +1303,12 @@
             }
         }
 
-
-        
         async function registrarTurnoProfesor(turnoData) {
             if (!state.estadoDECE.disponible) {
                 showNotification('El DECE no está disponible en este momento', 'warning');
                 return false;
             }
-            
+
             try {
                 const nuevoTurno = {
                     nombre: turnoData.nombre,
@@ -1366,19 +1323,19 @@
                     email_profesor: turnoData.email_profesor,
                     nombre_profesor: turnoData.nombre_profesor
                 };
-                
+
                 const { data, error } = await supabase.from('turnos').insert([nuevoTurno]);
-                
+
                 if (error) throw error;
-                
+
                 if (data && data.length > 0) {
                     await cargarDatos();
                     showNotification('El turno ha sido solicitado', 'success');
-                    
+
                     document.getElementById('formTurnoProfesor').reset();
                     document.getElementById('estudianteSelect').disabled = true;
                     document.getElementById('estudianteInfo').classList.add('hidden');
-                    
+
                     render();
                     return true;
                 }
@@ -1392,16 +1349,16 @@
         async function cambiarDisponibilidad() {
             try {
                 const nuevoEstado = !state.estadoDECE.disponible;
-                
+
                 const { error } = await supabase.from('configuracion')
                     .update({ disponible: nuevoEstado })
                     .eq('id', state.estadoDECE.id);
-                    
+
                 if (error) throw error;
-                
+
                 state.estadoDECE.disponible = nuevoEstado;
                 showNotification(nuevoEstado ? 'Sistema activado ✅' : 'Sistema pausado ⏸️', 'info');
-                
+
                 render();
             } catch (error) {
                 console.error('Error:', error);
@@ -1409,7 +1366,6 @@
             }
         }
 
-        // ========== FUNCIÓN ACTUALIZADA: ENVÍA EMAIL DE RECHAZO ==========
         async function actualizarEstadoTurno(turnoId, nuevoEstado, motivoRechazo = null, horaProgramada = null, notaDECE = null) {
             try {
                 const actualizado = { estado: nuevoEstado };
@@ -1419,25 +1375,23 @@
                 if (nuevoEstado === 'atendido' || nuevoEstado === 'no_asistio') {
                     actualizado.hora_atencion = new Date().toISOString();
                 }
-                
+
                 const { error } = await supabase.from('turnos').update(actualizado).eq('id', turnoId);
                 if (error) throw error;
-                
+
                 const mensajes = {
                     'aceptado': 'Turno aceptado correctamente',
                     'rechazado': 'Turno rechazado',
                     'atendido': 'Turno marcado como atendido',
                     'no_asistio': 'Marcado como "No asistió"'
                 };
-                
+
                 showNotification(mensajes[nuevoEstado] || 'Turno actualizado', 'success');
-                
-                // Obtener turno antes de recargar
+
                 const turnoAntes = state.turnos.find(t => t.id === turnoId);
-                
+
                 await cargarDatos();
-                
-                // Enviar emails según el estado
+
                 if (nuevoEstado === 'aceptado') {
                     const turnoActualizado = state.turnos.find(t => t.id === turnoId);
                     if (turnoActualizado) {
@@ -1446,14 +1400,13 @@
                         });
                     }
                 }
-                
-                // ========== ENVIAR EMAIL DE RECHAZO ==========
+
                 if (nuevoEstado === 'rechazado' && turnoAntes) {
                     enviarEmailRechazo(turnoAntes, motivoRechazo).catch(err => {
                         console.warn('Email de rechazo no enviado:', err);
                     });
                 }
-                
+
             } catch (error) {
                 console.error('Error:', error);
                 showNotification('Error: ' + error.message, 'error');
@@ -1463,7 +1416,7 @@
         async function agregarNotaDECE(turnoId) {
             const nota = prompt('Agregar nota interna del DECE:');
             if (!nota) return;
-            
+
             try {
                 const { error } = await supabase.from('turnos').update({ nota_dece: nota }).eq('id', turnoId);
                 if (error) throw error;
@@ -1474,18 +1427,17 @@
             }
         }
 
-        // RENDERIZADO
         function renderLogin() {
             return `
                 <div class="flex items-center justify-center min-h-screen p-4 fade-in">
                     <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full relative overflow-hidden border-4 border-yellow-400">
                         <div class="absolute top-0 left-0 w-full h-3" style="background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);"></div>
-                        
+
                         <div class="text-center mb-8">
                             <div class="flex justify-center mb-6">
                                 <img src="https://i.ibb.co/wNhQpyX0/image-30.png" alt="UEPDC Logo" class="logo-institucional">
                             </div>
-                            
+
                             <h1 class="text-4xl font-black mb-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                                 Sistema de Turnos DECE
                             </h1>
@@ -1494,7 +1446,7 @@
                                 🏫 UEPDC
                             </div>
                         </div>
-                        
+
                         <div class="mb-6">
                             <div class="grid grid-cols-3 gap-2 mb-6">
                                 <button id="btnEstudiante" class="py-4 px-4 text-white rounded-xl font-bold text-sm hover:shadow-xl transition-all btn-modern" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
@@ -1562,20 +1514,20 @@
 	                            <input type="text" name="apellidos" required minlength="2" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Ej: Pérez Gómez">
 	                        </div>
 	                    </div>
-                    
+
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📧 Correo Institucional *</label>
                         <input type="email" name="email" required pattern=".+@est\.uepdc\.edu\.ec$" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="nombre@est.uepdc.edu.ec">
                     </div>
-                    
+
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🆔 Cédula *</label>
                         <input type="text" name="cedula" required pattern="[0-9]{10}" maxlength="10" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="0123456789">
                     </div>
-                    
+
                     <div class="border-t-2 border-gray-200 pt-4">
                         <h3 class="font-black text-lg mb-3" style="color: #1e3a8a;">📚 Información Académica</h3>
-                        
+
                         <div class="mb-4">
                             <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">🎓 Nivel Educativo *</label>
                             <select name="nivel" id="nivelSelect" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
@@ -1586,14 +1538,14 @@
                                 <option value="Bachillerato">🎓 Bachillerato (1ro - 3ro BGU)</option>
                             </select>
                         </div>
-                        
+
                         <div id="gradoContainer" class="mb-4" style="display: none;">
                             <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📝 Curso *</label>
                             <select name="grado" id="gradoSelect" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
                                 <option value="">Primero selecciona el nivel</option>
                             </select>
                         </div>
-                        
+
                         <div id="paraleloContainer" class="mb-4" style="display: none;">
                             <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">📋 Paralelo *</label>
                             <select name="paralelo" id="paraleloSelect" required class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none select-modern" style="border-color: #60a5fa;">
@@ -1601,13 +1553,13 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="border-t-2 border-gray-200 pt-4">
                         <h3 class="font-black text-lg mb-3" style="color: #1e3a8a;">🔒 Seguridad</h3>
                         <label class="block font-bold mb-2 text-sm" style="color: #1e3a8a;">Contraseña *</label>
                         <input type="password" name="password" required minlength="6" class="w-full px-5 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #60a5fa;" placeholder="Mínimo 6 caracteres">
                     </div>
-                    
+
                     <button type="submit" class="w-full text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all btn-modern sticky bottom-0" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
                         <span>✨ Crear Cuenta</span>
                     </button>
@@ -1615,7 +1567,6 @@
             `;
         }
 
-        // ========== FORMULARIO DECE - SIN CUADRO DE CREDENCIALES ==========
         function renderFormDECE() {
             return `
                 <form id="loginDECEForm" class="space-y-5 fade-in">
@@ -1637,8 +1588,6 @@
             `;
         }
 
-
-        // ========== FORMULARIO PROFESOR - SIN CUADRO DE INFORMACIÓN ==========
         function renderFormProfesor() {
             return `
                 <form id="loginProfesorForm" class="space-y-5 fade-in">
@@ -1661,10 +1610,10 @@
         }
 
         function renderEstudiante() {
-            const tieneTurnoActivo = state.historialEstudiante.some(t => 
+            const tieneTurnoActivo = state.historialEstudiante.some(t =>
                 t.estado === 'pendiente' || t.estado === 'aceptado'
             );
-            
+
             return `
                 <div class="p-4 fade-in">
                     <div class="max-w-6xl mx-auto">
@@ -1702,7 +1651,7 @@
                         <div id="miTurnoContainer">
                             ${state.miTurno ? renderMiTurnoContent() : renderSolicitudTurno()}
                         </div>
-                        
+
                         ${state.mostrarHistorial ? renderModalHistorial() : ''}
                     </div>
                 </div>
@@ -1774,7 +1723,7 @@
 
         function renderMiTurnoContent() {
             const turno = state.miTurno;
-            
+
             let estaEnProceso = false;
             if (turno.hora_atencion_programada) {
                 const horaInicio = HoraUtils.extraerHoraInicio(turno.hora_atencion_programada);
@@ -1782,14 +1731,14 @@
                     estaEnProceso = HoraUtils.citaEnProceso(horaInicio);
                 }
             }
-            
-            const turnosEnCola = state.turnos.filter(t => 
+
+            const turnosEnCola = state.turnos.filter(t =>
                 (t.estado === 'pendiente' || t.estado === 'aceptado')
             ).sort((a, b) => a.numero_turno - b.numero_turno);
-            
+
             const miPosicion = turnosEnCola.findIndex(t => t.id === turno.id) + 1;
             const totalEnCola = turnosEnCola.length;
-            
+
             return `
                 ${(turno.estado === 'pendiente' || turno.estado === 'aceptado') ? `
                     <div class="gradient-bg text-white rounded-2xl p-10 text-center mb-6 shadow-2xl">
@@ -1817,7 +1766,7 @@
                         </div>
                     </div>
                 `}
-                
+
                 ${estaEnProceso ? `
                     <div class="badge-en-proceso text-white p-8 rounded-2xl mb-6 text-center shadow-xl">
                         <div class="text-5xl mb-3">🔄</div>
@@ -1825,12 +1774,12 @@
                         <div class="text-lg mt-2">Tu cita está en curso: ${turno.hora_atencion_programada}</div>
                     </div>
                 ` : ''}
-                
+
                 <div class="bg-white rounded-2xl p-8 shadow-xl mb-6">
                     <h3 class="text-2xl font-bold text-gray-800 mb-6">📋 Estado de tu turno</h3>
                     ${renderEstadoTurno(turno)}
                 </div>
-                
+
                 <button onclick="volverInicio()" class="w-full bg-gray-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-600 transition-all btn-modern">
                     <span>← Volver al inicio</span>
                 </button>
@@ -1845,9 +1794,9 @@
                 'atendido': { color: 'blue', icon: '✔️', texto: 'Atendido' },
                 'no_asistio': { color: 'gray', icon: '🚫', texto: 'No asistió' }
             };
-            
+
             const estado = estados[turno.estado] || estados.pendiente;
-            
+
             return `
                 <div class="bg-${estado.color}-100 border-2 border-${estado.color}-300 rounded-xl p-6">
                     <div class="flex items-center gap-4">
@@ -1866,10 +1815,9 @@
             `;
         }
 
-
         function renderProfesor() {
             const cursosDisponibles = ordenarCursosCorrectamente(Object.keys(ESTUDIANTES_BD));
-            
+
             return `
                 <div class="p-4 fade-in">
                     <div class="max-w-6xl mx-auto">
@@ -1927,7 +1875,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 <div id="estudianteInfo" class="hidden bg-green-50 border-2 border-green-200 rounded-xl p-4">
                                     <h4 class="font-bold text-green-800 mb-2">📋 Información del Estudiante</h4>
                                     <div class="grid md:grid-cols-3 gap-4 text-sm">
@@ -1936,7 +1884,7 @@
                                         <div><span class="font-semibold">Curso:</span> <span id="infoCurso"></span></div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="grid md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block font-bold text-gray-700 mb-2">📋 Motivo *</label>
@@ -1976,7 +1924,7 @@
                 'pendiente': 'bg-yellow-50 border-yellow-300',
                 'aceptado': 'bg-blue-50 border-blue-300'
             };
-            
+
             return `
                 <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="cerrarHistorial()">
                     <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -1990,7 +1938,7 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div class="p-6 space-y-4">
                             ${state.historialEstudiante.length > 0 ? state.historialEstudiante.map(turno => `
                                 <div class="border-2 ${coloresHistorial[turno.estado] || 'bg-gray-50 border-gray-300'} rounded-2xl p-6 shadow-lg">
@@ -2041,7 +1989,7 @@
                     estaEnProceso = HoraUtils.citaEnProceso(horaInicio);
                 }
             }
-            
+
             const coloresEstado = {
                 'pendiente': 'bg-yellow-200 border-yellow-500',
                 'aceptado': estaEnProceso ? 'bg-orange-200 border-orange-500' : 'bg-green-200 border-green-500',
@@ -2049,7 +1997,7 @@
                 'atendido': 'bg-blue-200 border-blue-500',
                 'no_asistio': 'bg-purple-200 border-purple-500'
             };
-            
+
             const iconosEstado = {
                 'pendiente': '⏳',
                 'aceptado': estaEnProceso ? '🔄' : '✅',
@@ -2057,9 +2005,9 @@
                 'atendido': '✔️',
                 'no_asistio': '🚫'
             };
-            
+
             const esSolicitadoPorProfesor = turno.solicitado_por === 'profesor';
-            
+
             return `
                 <div class="rounded-3xl shadow-lg p-6 border-l-8 ${coloresEstado[turno.estado]} card-hover mb-4">
                     <div class="flex justify-between items-start mb-4">
@@ -2080,21 +2028,21 @@
                             <div class="text-xs text-gray-400 font-medium">${new Date(turno.created_at).toLocaleString('es-ES')}</div>
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="flex items-center gap-2">
-                            <span class="font-black text-gray-800">📋 Motivo:</span> 
+                            <span class="font-black text-gray-800">📋 Motivo:</span>
                             <span class="text-gray-700 font-medium">${turno.motivo}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-blue-500">●</span>
-                            <span class="font-black text-gray-800">Email:</span> 
+                            <span class="font-black text-gray-800">Email:</span>
                             <span class="text-gray-700 font-medium">${turno.email_estudiante || 'N/A'}</span>
                         </div>
                         ${turno.hora_atencion_programada ? `
                             <div class="col-span-2 flex items-center gap-2">
                                 <span class="text-gray-600">🕒</span>
-                                <span class="font-black text-gray-800">Hora:</span> 
+                                <span class="font-black text-gray-800">Hora:</span>
                                 <span class="text-gray-700 font-medium">${turno.hora_atencion_programada}</span>
                                 ${turno.estado !== 'atendido' ? `
                                     <button onclick="editarHora(${turno.id}, '${turno.hora_atencion_programada}')" class="text-orange-400 hover:text-orange-600 transition-colors">
@@ -2105,18 +2053,18 @@
                         ` : ''}
                         ${turno.motivo_rechazo ? `
                             <div class="col-span-2 bg-red-50 p-3 rounded-xl border-2 border-red-200 text-red-700">
-                                <span class="font-black">❌ Rechazo:</span> 
+                                <span class="font-black">❌ Rechazo:</span>
                                 <span class="font-medium">${turno.motivo_rechazo}</span>
                             </div>
                         ` : ''}
                         ${turno.nota_dece ? `
                             <div class="col-span-2 bg-purple-50 p-3 rounded-xl border-2 border-purple-200 text-purple-700">
-                                <span class="font-black">📝 Nota DECE:</span> 
+                                <span class="font-black">📝 Nota DECE:</span>
                                 <span class="font-medium">${turno.nota_dece}</span>
                             </div>
                         ` : ''}
                     </div>
-                    
+
                     ${turno.situacion ? `
                         <div class="bg-white border-2 border-gray-100 p-4 rounded-2xl mb-4 shadow-sm">
                             <div class="flex items-center gap-2 mb-2">
@@ -2126,13 +2074,13 @@
                             <p class="text-gray-600 font-medium leading-relaxed">${turno.situacion}</p>
                         </div>
                     ` : ''}
-                    
+
                     ${estaEnProceso ? `
                         <div class="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-3 rounded-xl text-center mb-4 font-black text-sm tracking-widest shadow-md flex items-center justify-center gap-2">
                             <span>🔍</span> CITA EN PROCESO
                         </div>
                     ` : ''}
-                    
+
                     <div class="flex flex-wrap gap-3">
                         ${turno.estado === 'pendiente' ? `
                             <button onclick="aceptarTurnoConHora(${turno.id})" class="bg-green-500 text-white px-6 py-3 rounded-xl hover:bg-green-600 hover:shadow-lg transition-all font-black text-sm uppercase tracking-wider">
@@ -2275,10 +2223,9 @@
                                 </div>
                             </div>
 
-                            
                             <div id="listaTurnos">
-                                ${filtrarYBuscarTurnos().length === 0 
-                                    ? renderSinTurnos() 
+                                ${filtrarYBuscarTurnos().length === 0
+                                    ? renderSinTurnos()
                                     : `<div class="space-y-4">${filtrarYBuscarTurnos().map(turno => renderTurnoCard(turno)).join('')}</div>`
                                 }
                             </div>
@@ -2288,27 +2235,26 @@
             `;
         }
 
-        // EVENT HANDLERS
         function attachLoginEvents() {
             const btnEstudiante = document.getElementById('btnEstudiante');
             const btnProfesor = document.getElementById('btnProfesor');
             const btnDECE = document.getElementById('btnDECE');
             const formContainer = document.getElementById('formContainer');
-            
+
             if (btnEstudiante) {
                 btnEstudiante.addEventListener('click', () => {
                     formContainer.innerHTML = renderFormEstudiante();
                     attachEstudianteFormEvents();
                 });
             }
-            
+
             if (btnProfesor) {
                 btnProfesor.addEventListener('click', () => {
                     formContainer.innerHTML = renderFormProfesor();
                     attachProfesorFormEvents();
                 });
             }
-            
+
             if (btnDECE) {
                 btnDECE.addEventListener('click', () => {
                     formContainer.innerHTML = renderFormDECE();
@@ -2321,10 +2267,10 @@
             const btnLoginEst = document.getElementById('btnLoginEst');
             const btnRegistroEst = document.getElementById('btnRegistroEst');
             const formEstudiante = document.getElementById('formEstudiante');
-            
+
             if (btnLoginEst && btnRegistroEst && formEstudiante) {
                 formEstudiante.innerHTML = renderLoginEstudiante();
-                
+
                 btnLoginEst.addEventListener('click', () => {
                     btnLoginEst.classList.add('border-b-4');
                     btnLoginEst.style.borderColor = '#1e3a8a';
@@ -2334,7 +2280,7 @@
                     formEstudiante.innerHTML = renderLoginEstudiante();
                     attachLoginEstudianteEvents();
                 });
-                
+
                 btnRegistroEst.addEventListener('click', () => {
                     btnRegistroEst.classList.add('border-b-4');
                     btnRegistroEst.style.borderColor = '#1e3a8a';
@@ -2344,7 +2290,7 @@
                     formEstudiante.innerHTML = renderRegistroEstudiante();
                     attachRegistroEstudianteEvents();
                 });
-                
+
                 attachLoginEstudianteEvents();
             }
         }
@@ -2370,7 +2316,7 @@
             const paraleloSelect = document.getElementById('paraleloSelect');
             const gradoContainer = document.getElementById('gradoContainer');
             const paraleloContainer = document.getElementById('paraleloContainer');
-            
+
             if (nivelSelect) {
                 nivelSelect.addEventListener('change', (e) => {
                     const nivel = e.target.value;
@@ -2388,7 +2334,7 @@
                     }
                 });
             }
-            
+
             if (gradoSelect) {
                 gradoSelect.addEventListener('change', (e) => {
                     const nivel = nivelSelect.value;
@@ -2404,14 +2350,14 @@
                     }
                 });
             }
-            
+
 	            if (registroEstForm) {
 	                registroEstForm.addEventListener('submit', async (e) => {
 	                    e.preventDefault();
 	                    const formData = new FormData(e.target);
 	                    const nombres = formData.get('nombres').trim();
 	                    const apellidos = formData.get('apellidos').trim();
-	                    
+
 	                    await registrarEstudiante({
 	                        nombre: `${nombres} ${apellidos}`,
 	                        email: formData.get('email'),
@@ -2428,7 +2374,7 @@
         function attachProfesorFormEvents() {
             const loginProfesorForm = document.getElementById('loginProfesorForm');
             const btnVolverLoginProf = document.getElementById('btnVolverLoginProf');
-            
+
             if (loginProfesorForm) {
                 console.log('✅ Event listener de profesor adjuntado');
                 loginProfesorForm.addEventListener('submit', async (e) => {
@@ -2440,7 +2386,7 @@
                     const result = await loginProfesor(email, password);
                 });
             }
-            
+
             if (btnVolverLoginProf) {
                 btnVolverLoginProf.addEventListener('click', () => {
                     document.getElementById('formContainer').innerHTML = '';
@@ -2451,7 +2397,7 @@
         function attachDECEFormEvents() {
             const loginDECEForm = document.getElementById('loginDECEForm');
             const btnVolverLogin = document.getElementById('btnVolverLogin');
-            
+
             if (loginDECEForm) {
                 loginDECEForm.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -2462,7 +2408,7 @@
                     }
                 });
             }
-            
+
             if (btnVolverLogin) {
                 btnVolverLogin.addEventListener('click', () => {
                     document.getElementById('formContainer').innerHTML = '';
@@ -2474,12 +2420,12 @@
             const cursoSelect = document.getElementById('cursoSelect');
             const estudianteSelect = document.getElementById('estudianteSelect');
             const estudianteInfo = document.getElementById('estudianteInfo');
-            
+
             if (cursoSelect) {
                 cursoSelect.addEventListener('change', (e) => {
                     const curso = e.target.value;
                     estudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
-                    
+
                     if (curso && ESTUDIANTES_BD[curso]) {
                         ESTUDIANTES_BD[curso].forEach(estudiante => {
                             const option = document.createElement('option');
@@ -2494,12 +2440,12 @@
                     estudianteInfo.classList.add('hidden');
                 });
             }
-            
+
             if (estudianteSelect) {
                 estudianteSelect.addEventListener('change', (e) => {
                     if (e.target.value) {
                         const estudiante = JSON.parse(e.target.value);
-                        
+
                         document.getElementById('infoNombre').textContent = normalizarNombre(estudiante['Nombre completo estudiante']);
                         document.getElementById('infoEmail').textContent = estudiante['Email estudiante'];
                         document.getElementById('infoCurso').textContent = curso;
@@ -2509,22 +2455,22 @@
                     }
                 });
             }
-            
+
             const formTurnoProfesor = document.getElementById('formTurnoProfesor');
             if (formTurnoProfesor) {
                 formTurnoProfesor.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    
+
                     const estudianteSelect = document.getElementById('estudianteSelect');
                     if (!estudianteSelect.value) {
                         showNotification('Debes seleccionar un estudiante', 'error');
                         return;
                     }
-                    
+
                     const estudiante = JSON.parse(estudianteSelect.value);
                     const curso = document.getElementById('cursoSelect').value;
                     const formData = new FormData(e.target);
-                    
+
                     const turnoData = {
                         nombre: normalizarNombre(estudiante['Nombre completo estudiante']),
                         email_estudiante: estudiante['Email estudiante'],
@@ -2536,7 +2482,7 @@
                         email_profesor: state.usuarioActual.email,
                         nombre_profesor: state.usuarioActual.nombre
                     };
-                    
+
                     await registrarTurnoProfesor(turnoData);
                 });
             }
@@ -2559,11 +2505,10 @@
             }
         }
 
-        // Funciones globales
         window.cerrarSesion = cerrarSesion;
         window.cambiarDisponibilidad = cambiarDisponibilidad;
         window.agregarNotaDECE = agregarNotaDECE;
-        
+
         window.refrescarManual = async () => {
             await cargarDatos();
             if (state.vista === 'dece') {
@@ -2571,7 +2516,7 @@
             }
             showNotification('Datos actualizados ✅', 'success');
         };
-        
+
         window.aceptarTurnoConHora = async (id) => {
             const hora = prompt('🕐 Hora de inicio (ej: 10:00):');
             if (hora && /^\d{1,2}:\d{2}$/.test(hora)) {
@@ -2581,17 +2526,17 @@
                 showNotification('Formato inválido', 'error');
             }
         };
-        
+
         window.editarHora = async (id, horaActual) => {
             const hora = prompt('Modificar hora de inicio (formato 24h, ej: 10:00):', HoraUtils.extraerHoraInicio(horaActual) || '10:00');
             if (hora && hora !== horaActual && /^\d{1,2}:\d{2}$/.test(hora)) {
                 try {
                     const rangoCompleto = HoraUtils.generarRango(hora);
-                    
-                    const { error } = await supabase.from('turnos').update({ 
-                        hora_atencion_programada: rangoCompleto 
+
+                    const { error } = await supabase.from('turnos').update({
+                        hora_atencion_programada: rangoCompleto
                     }).eq('id', id);
-                    
+
                     if (error) throw error;
                     await cargarDatos();
                     showNotification('Hora actualizada con rango de 40 minutos ✅', 'success');
@@ -2602,31 +2547,31 @@
                 showNotification('Formato inválido. Usa HH:MM (ej: 10:00)', 'error');
             }
         };
-        
+
         window.rechazarTurno = (id) => {
             const motivo = prompt('Motivo del rechazo:');
             if (motivo) {
                 actualizarEstadoTurno(id, 'rechazado', motivo);
             }
         };
-        
+
         window.marcarAtendido = (id) => {
             if (confirm('¿Confirmar atendido?')) {
                 actualizarEstadoTurno(id, 'atendido');
             }
         };
-        
+
         window.marcarNoAsistio = (id) => {
             if (confirm('¿Confirmar no asistió?')) {
                 actualizarEstadoTurno(id, 'no_asistio');
             }
         };
-        
+
         window.cerrarMiTurno = () => {
             state.miTurno = null;
             render();
         };
-        
+
         window.verMiTurno = async () => {
             const miTurnoId = localStorage.getItem('miTurnoId');
             if (miTurnoId) {
@@ -2642,32 +2587,31 @@
                 }
             }
         };
-        
+
         window.volverInicio = () => {
             state.miTurno = null;
             localStorage.removeItem('miTurnoId');
             render();
         };
-        
+
         window.abrirHistorial = () => {
             state.mostrarHistorial = true;
             render();
         };
-        
+
         window.cerrarHistorial = () => {
             state.mostrarHistorial = false;
             render();
         };
-        
+
         window.filtrarTurnos = (filtro) => {
             state.filtroTurnos = filtro;
             actualizarListaTurnosUI();
         };
 
-        // RENDERIZADO PRINCIPAL
         function render() {
             const app = document.getElementById('app');
-            
+
             if (state.vista === 'login') {
                 app.innerHTML = renderLogin();
                 attachLoginEvents();
@@ -2684,7 +2628,6 @@
             }
         }
 
-        // VERIFICAR SESIÓN E INICIALIZACIÓN
         function verificarSesion() {
             const sesion = localStorage.getItem('sesion');
             if (sesion) {
@@ -2695,12 +2638,11 @@
             }
         }
 
-        // Auto-refresh OPTIMIZADO - 10 segundos
         let refreshInterval;
-        
+
         function iniciarAutoRefresh() {
             if (refreshInterval) clearInterval(refreshInterval);
-            
+
             refreshInterval = setInterval(async () => {
                 if (state.configurado && (state.vista === 'estudiante' || state.vista === 'dece')) {
                     await cargarDatos();
@@ -2708,46 +2650,42 @@
             }, 10000);
         }
 
-        // ========== INICIALIZACIÓN OPTIMIZADA ==========
         async function init() {
             console.log('🚀 Iniciando Sistema DECE...');
             const startTime = performance.now();
-            
-            // Inicializar EmailJS (asíncrono, no bloquea)
+
             setTimeout(initEmailJS, 100);
-            
-            // Cargar datos en paralelo
+
             const [estudiantesOk] = await Promise.all([
                 cargarEstudiantes(),
                 verificarConfiguracion()
             ]);
-            
+
             verificarSesion();
-            
+
             if (state.vista !== 'login') {
                 await cargarDatos();
-                
+
                 if (state.vista === 'estudiante') {
                     const miTurnoId = localStorage.getItem('miTurnoId');
                     if (miTurnoId && state.turnos.length > 0) {
                         const turno = state.turnos.find(t => t.id === parseInt(miTurnoId));
                         if (turno) state.miTurno = turno;
                     }
-                    
-                    state.historialEstudiante = state.turnos.filter(t => 
+
+                    state.historialEstudiante = state.turnos.filter(t =>
                         t.email_estudiante === state.usuarioActual.email
                     );
                 }
             }
-            
+
             render();
             iniciarAutoRefresh();
-            
+
             const endTime = performance.now();
             console.log(`✅ Sistema listo en ${(endTime - startTime).toFixed(0)}ms`);
         }
 
-        // Esperar a que el DOM esté listo
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
