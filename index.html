@@ -853,6 +853,8 @@
                     if (state.vista === 'dece') {
                         actualizarEstadisticasUI();
                         actualizarListaTurnosUI();
+                    } else if (state.vista === 'profesor') {
+                        render();
                     }
                 }
                 
@@ -1231,7 +1233,13 @@
                 );
                 const usuarios = await response.json();
                 
-                if (!response.ok || !usuarios || usuarios.length === 0) {
+                if (!response.ok) {
+                    console.error('❌ Error de Supabase:', usuarios);
+                    showNotification('Error de acceso a la base de datos. Verifica las políticas RLS.', 'error');
+                    return false;
+                }
+
+                if (!usuarios || usuarios.length === 0) {
                     showNotification('Correo o contraseña incorrectos', 'error');
                     return false;
                 }
@@ -2612,7 +2620,9 @@
                 attachEstudianteEvents();
             } else if (state.vista === 'profesor') {
                 app.innerHTML = renderProfesor();
-                attachProfesorEvents();
+                if (typeof attachProfesorEvents === 'function') {
+                    attachProfesorEvents();
+                }
             } else if (state.vista === 'dece') {
                 app.innerHTML = renderDECE();
             }
