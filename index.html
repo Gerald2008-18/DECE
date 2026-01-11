@@ -227,15 +227,17 @@
             if (!nombre) return 'N/A';
             const partes = nombre.trim().split(/\s+/);
             
-            // Si tiene 4 partes, intentamos detectar si está invertido (APELLIDOS NOMBRES)
-            // Una forma común es que en las listas institucionales los apellidos suelen ser más largos 
-            // o estar en mayúsculas, pero aquí unificaremos todo a NOMBRES APELLIDOS.
-            // Si el nombre viene de la base de datos (donde sabemos que está invertido), lo corregimos.
-            // Si es un registro nuevo, ya viene como "Nombres Apellidos".
+            // Si tiene 4 partes (2 apellidos y 2 nombres), invertimos el orden
+            // de "APELLIDO1 APELLIDO2 NOMBRE1 NOMBRE2" a "NOMBRE1 NOMBRE2 APELLIDO1 APELLIDO2"
+            if (partes.length === 4) {
+                return `${partes[2]} ${partes[3]} ${partes[0]} ${partes[1]}`.toUpperCase();
+            }
             
-            // Para esta implementación, asumiremos que si el nombre tiene 4 partes y 
-            // no ha sido procesado por el nuevo formulario, necesita normalización.
-            // Sin embargo, con el nuevo formulario dividido, el problema se resuelve de raíz para nuevos usuarios.
+            // Si tiene 3 partes (podría ser 2 apellidos y 1 nombre), invertimos
+            // de "APELLIDO1 APELLIDO2 NOMBRE1" a "NOMBRE1 APELLIDO1 APELLIDO2"
+            if (partes.length === 3) {
+                return `${partes[2]} ${partes[0]} ${partes[1]}`.toUpperCase();
+            }
             
             return nombre.toUpperCase();
         }
@@ -1309,7 +1311,7 @@
                 }
                 
                 const nuevoTurno = {
-                    nombre: form.nombre,
+                    nombre: normalizarNombre(form.nombre),
                     cedula: form.cedula,
                     curso: form.curso,
                     motivo: form.motivo,
@@ -2497,9 +2499,8 @@
                 estudianteSelect.addEventListener('change', (e) => {
                     if (e.target.value) {
                         const estudiante = JSON.parse(e.target.value);
-                        const curso = cursoSelect.value;
                         
-                        document.getElementById('infoNombre').textContent = estudiante['Nombre completo estudiante'];
+                        document.getElementById('infoNombre').textContent = normalizarNombre(estudiante['Nombre completo estudiante']);
                         document.getElementById('infoEmail').textContent = estudiante['Email estudiante'];
                         document.getElementById('infoCurso').textContent = curso;
                         estudianteInfo.classList.remove('hidden');
@@ -2525,7 +2526,7 @@
                     const formData = new FormData(e.target);
                     
                     const turnoData = {
-                        nombre: estudiante['Nombre completo estudiante'],
+                        nombre: normalizarNombre(estudiante['Nombre completo estudiante']),
                         email_estudiante: estudiante['Email estudiante'],
                         cedula: 'N/A',
                         curso: curso,
