@@ -1215,8 +1215,10 @@
 
         
         async function loginProfesor(email, password) {
-            if (!email.endsWith('@uepdc.edu.ec') || email.endsWith('@est.uepdc.edu.ec')) {
+            console.log('🔑 Intentando login para:', email);
+            if (!email.toLowerCase().endsWith('@uepdc.edu.ec') || email.toLowerCase().endsWith('@est.uepdc.edu.ec')) {
                 showNotification('Debes usar tu correo institucional de profesor (@uepdc.edu.ec)', 'error');
+                console.warn('⚠️ Email no válido para profesor:', email);
                 return false;
             }
 
@@ -1616,7 +1618,7 @@
                 <form id="loginProfesorForm" class="space-y-5 fade-in">
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #065f46;">📧 Correo Institucional</label>
-                        <input type="email" name="email" required pattern=".+@uepdc\\.edu\\.ec$" class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #34d399;" placeholder="profesor@uepdc.edu.ec">
+                        <input type="email" name="email" required class="w-full px-5 py-4 border-2 rounded-xl focus:outline-none text-lg" style="border-color: #34d399;" placeholder="profesor@uepdc.edu.ec">
                     </div>
                     <div>
                         <label class="block font-bold mb-2 text-sm" style="color: #065f46;">🔑 Contraseña</label>
@@ -2377,10 +2379,14 @@
             const btnVolverLoginProf = document.getElementById('btnVolverLoginProf');
             
             if (loginProfesorForm) {
+                console.log('✅ Event listener de profesor adjuntado');
                 loginProfesorForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    console.log('📩 Formulario de profesor enviado');
                     const formData = new FormData(e.target);
-                    const result = await loginProfesor(formData.get('email'), formData.get('password'));
+                    const email = formData.get('email');
+                    const password = formData.get('password');
+                    const result = await loginProfesor(email, password);
                 });
             }
             
